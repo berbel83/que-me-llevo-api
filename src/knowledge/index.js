@@ -665,15 +665,13 @@ const MODULES = {
   }
 };
 
-
 export function buildKnowledge(
   activeModules
 ) {
   const items = [];
   const verifications = [];
 
-  const seenIds =
-    new Set();
+  const seenIds = new Set();
 
   for (
     const moduleName
@@ -719,8 +717,78 @@ export function buildKnowledge(
     }
   }
 
+  // ==================================================
+  // SUSTITUCIONES INTELIGENTES
+  // ==================================================
+  //
+  // Un objeto especializado puede sustituir
+  // a otro más genérico.
+  //
+  // Ejemplo:
+  // calcetines técnicos de senderismo
+  // sustituye a calcetines genéricos.
+  //
+  // Esto evita que los módulos simplemente
+  // acumulen objetos duplicados.
+  // ==================================================
+
+  const replacementRules = {
+    calcetines_tecnicos: [
+      "calcetines_base"
+    ],
+
+    calzado_trekking: [
+      "calzado_urbano"
+    ]
+  };
+
+  const existingIds =
+    new Set(
+      items.map(
+        item => item.id
+      )
+    );
+
+  const idsToRemove =
+    new Set();
+
+  for (
+    const [
+      specializedId,
+      replacedIds
+    ]
+    of Object.entries(
+      replacementRules
+    )
+  ) {
+    if (
+      !existingIds.has(
+        specializedId
+      )
+    ) {
+      continue;
+    }
+
+    for (
+      const replacedId
+      of replacedIds
+    ) {
+      idsToRemove.add(
+        replacedId
+      );
+    }
+  }
+
+  const finalItems =
+    items.filter(
+      item =>
+        !idsToRemove.has(
+          item.id
+        )
+    );
+
   return {
-    items,
+    items: finalItems,
     verifications
   };
 }
