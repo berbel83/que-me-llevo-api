@@ -24,47 +24,33 @@ export function applyQuantityRules(
     // ====================================================
 
     if (
-      copy.id === "camisetas_base"
-    ) {
-      let qty = null;
+  copy.id === "camisetas_base"
+) {
+  let qty = null;
 
-      if (days) {
-        if (frequentLaundry) {
-          qty =
-            ownBackpack
-              ? 3
-              : Math.min(
-                  4,
-                  Math.max(
-                    3,
-                    Math.ceil(days / 3)
-                  )
-                );
-        } else {
-          qty =
-            days <= 5
-              ? days
-              : Math.min(
-                  7,
-                  Math.ceil(
-                    days * 0.75
-                  )
-                );
-        }
-      }
-
-      if (qty) {
-        copy.name =
-          `${qty} camisetas`;
-      }
-
-      if (frequentLaundry) {
-        copy.why =
-          "La posibilidad de lavar permite reducir cantidad sin llevar una camiseta por cada día.";
-      }
-
-      return copy;
+  if (days) {
+    if (frequentLaundry) {
+      qty = ownBackpack ? 3 : 4;
+    } else {
+      qty =
+        days <= 5
+          ? days
+          : Math.min(6, days);
     }
+  }
+
+  if (qty) {
+    copy.name =
+      `${qty} camisetas`;
+  }
+
+  copy.why =
+    frequentLaundry
+      ? "Con lavado frecuente puedes trabajar por rotación y evitar llevar una camiseta por día."
+      : "Cantidad ajustada a la duración sin añadir prendas innecesarias.";
+
+  return copy;
+}
 
     // ====================================================
     // PANTALONES
@@ -105,82 +91,68 @@ export function applyQuantityRules(
     // ====================================================
 
     if (
-      copy.id ===
-      "ropa_interior_base"
-    ) {
-      let qty = null;
+  copy.id === "ropa_interior_base"
+) {
+  let qty = null;
 
-      if (days) {
-        if (frequentLaundry) {
-          qty =
-            ownBackpack
-              ? 3
-              : Math.min(
-                  5,
-                  Math.ceil(days / 2)
-                );
-        } else {
-          qty =
-            Math.min(
-              days + 1,
-              8
-            );
-        }
-      }
-
-      if (qty) {
-        copy.name =
-          `${qty} mudas de ropa interior`;
-      }
-
-      copy.why =
-        frequentLaundry
-          ? "Con lavado frecuente puedes llevar menos mudas y reducir peso."
-          : "Incluye una cantidad suficiente para la duración del viaje con un pequeño margen cuando sea razonable.";
-
-      return copy;
+  if (days) {
+    if (frequentLaundry) {
+      qty = ownBackpack ? 3 : 4;
+    } else {
+      qty =
+        Math.min(
+          days + 1,
+          7
+        );
     }
+  }
+
+  if (qty) {
+    copy.name =
+      `${qty} mudas de ropa interior`;
+  }
+
+  copy.why =
+    frequentLaundry
+      ? "La rotación con lavado frecuente permite reducir cantidad sin sacrificar higiene."
+      : "Cantidad suficiente para el viaje con un margen razonable.";
+
+  return copy;
+}
 
     // ====================================================
     // CALCETINES BASE
     // ====================================================
 
     if (
-      copy.id ===
-      "calcetines_base"
-    ) {
-      let qty = null;
+  copy.id === "calcetines_base"
+) {
+  let qty = null;
 
-      if (days) {
-        if (frequentLaundry) {
-          qty =
-            ownBackpack
-              ? 3
-              : Math.min(
-                  5,
-                  Math.ceil(days / 2)
-                );
-        } else {
-          qty =
-            Math.min(
-              days,
-              7
-            );
-        }
-      }
-
-      if (qty) {
-        copy.name =
-          `${qty} pares de calcetines`;
-      }
-
-      copy.why =
-        frequentLaundry
-          ? "La rotación y el lavado frecuente permiten reducir cantidad."
-          : "Cantidad adaptada a la duración sin cargar pares innecesarios.";
-
-      return copy;
+  if (days) {
+    if (frequentLaundry) {
+      qty = ownBackpack ? 3 : 4;
+    } else {
+      qty =
+        Math.min(
+          days,
+          6
+        );
     }
+  }
+
+  if (qty) {
+    copy.name =
+      `${qty} pares de calcetines`;
+  }
+
+  copy.why =
+    frequentLaundry
+      ? "La rotación y el lavado frecuente permiten reducir cantidad."
+      : "Cantidad ajustada a la duración sin cargar pares de más.";
+
+  return copy;
+}
 
     // ====================================================
     // CALCETINES TÉCNICOS DE SENDERISMO
