@@ -1,17 +1,11 @@
 export function detectModules(
   trip,
-  analysis,
-  answers
+  analysis = {},
+  answers = {}
 ) {
-  const text = buildText(
-    trip,
-    analysis,
-    answers
-  );
+  const text = buildText(trip, analysis, answers);
 
-  const activeModules = [
-    "viaje_base"
-  ];
+  const activeModules = ["viaje_base"];
 
   const flags = {
     hasChildren: false,
@@ -19,20 +13,28 @@ export function detectModules(
     frequentLaundry: false,
     ownBackpack: false,
     cabinOnly: false,
-    longDaysOut: false
+    longDaysOut: false,
+    hotel: false,
+    hostel: false,
+    camping: false,
+    plane: false,
+    car: false,
+    train: false
   };
 
-  const durationDays =
-    detectDurationDays(
-      trip,
-      analysis
-    );
+  const durationDays = detectDurationDays(
+    trip,
+    analysis
+  );
 
-  const travellers =
-    detectTravellers(
-      trip,
-      analysis
-    );
+  const travellers = detectTravellers(
+    trip,
+    analysis
+  );
+
+  const childAges = detectChildAges(
+    text
+  );
 
   // ====================================================
   // DURACIÓN
@@ -56,7 +58,9 @@ export function detectModules(
     );
   }
 
-  if (durationDays >= 15) {
+  if (
+    durationDays >= 15
+  ) {
     activeModules.push(
       "duracion_15_mas"
     );
@@ -67,28 +71,21 @@ export function detectModules(
   // ====================================================
 
   if (
-    matches(
-      text,
-      [
-        "hotel",
-        "resort"
-      ]
-    )
+    matches(text, [
+      "hotel",
+      "resort"
+    ])
   ) {
-    activeModules.push(
-      "hotel"
-    );
+    flags.hotel = true;
+    activeModules.push("hotel");
   }
 
   if (
-    matches(
-      text,
-      [
-        "apartamento",
-        "apartahotel",
-        "casa rural"
-      ]
-    )
+    matches(text, [
+      "apartamento",
+      "apartahotel",
+      "casa rural"
+    ])
   ) {
     activeModules.push(
       "apartamento"
@@ -96,52 +93,56 @@ export function detectModules(
   }
 
   if (
-    matches(
-      text,
-      [
-        "albergue",
-        "albergues",
-        "hostel",
-        "habitacion compartida",
-        "habitación compartida"
-      ]
-    )
+    matches(text, [
+      "albergue",
+      "albergues",
+      "hostel",
+      "habitacion compartida",
+      "habitación compartida"
+    ])
   ) {
+    flags.hostel = true;
     activeModules.push(
       "albergue"
     );
   }
 
   if (
-    matches(
-      text,
-      [
-        "camping",
-        "acampada",
-        "tienda de campaña"
-      ]
-    )
+    matches(text, [
+      "camping",
+      "acampada",
+      "tienda de campaña"
+    ])
   ) {
+    flags.camping = true;
     activeModules.push(
       "camping"
     );
   }
 
   // ====================================================
-  // ACTIVIDADES
+  // ACTIVIDADES / TIPO DE VIAJE
   // ====================================================
 
-  if (
-    matches(
-      text,
-      [
-        "camino de santiago",
-        "peregrinacion",
-        "peregrinación",
-        "peregrino"
-      ]
-    )
-  ) {
+  const isCamino =
+    matches(text, [
+      "camino de santiago",
+      "peregrinacion",
+      "peregrinación",
+      "peregrino"
+    ]);
+
+  const isHiking =
+    matches(text, [
+      "senderismo",
+      "trekking",
+      "ruta de varios dias",
+      "ruta de varios días",
+      "caminata de varios dias",
+      "caminata de varios días"
+    ]);
+
+  if (isCamino) {
     activeModules.push(
       "peregrinacion_camino"
     );
@@ -152,37 +153,30 @@ export function detectModules(
   }
 
   if (
-    matches(
-      text,
-      [
-        "senderismo",
-        "trekking",
-        "ruta de varios dias",
-        "ruta de varios días"
-      ]
-    ) &&
-    durationDays >= 2
+    isHiking &&
+    (
+      !durationDays ||
+      durationDays >= 2
+    )
   ) {
     activeModules.push(
       "senderismo_varios_dias"
     );
   }
 
-  if (
-    matches(
-      text,
-      [
-        "disneyland",
-        "disney",
-        "portaventura",
-        "port aventura",
-        "terra mitica",
-        "terra mítica",
-        "parque tematico",
-        "parque temático"
-      ]
-    )
-  ) {
+  const isThemePark =
+    matches(text, [
+      "disneyland",
+      "disney",
+      "portaventura",
+      "port aventura",
+      "terra mitica",
+      "terra mítica",
+      "parque tematico",
+      "parque temático"
+    ]);
+
+  if (isThemePark) {
     activeModules.push(
       "parque_tematico"
     );
@@ -195,17 +189,14 @@ export function detectModules(
   }
 
   if (
-    matches(
-      text,
-      [
-        "playa",
-        "costa",
-        "piscina",
-        "baño",
-        "banarse",
-        "bañarse"
-      ]
-    )
+    matches(text, [
+      "playa",
+      "costa",
+      "piscina",
+      "baño",
+      "banarse",
+      "bañarse"
+    ])
   ) {
     activeModules.push(
       "playa"
@@ -213,15 +204,12 @@ export function detectModules(
   }
 
   if (
-    matches(
-      text,
-      [
-        "nieve",
-        "esqui",
-        "esquí",
-        "snowboard"
-      ]
-    )
+    matches(text, [
+      "nieve",
+      "esqui",
+      "esquí",
+      "snowboard"
+    ])
   ) {
     activeModules.push(
       "nieve"
@@ -233,33 +221,25 @@ export function detectModules(
   }
 
   // ====================================================
-  // VIAJEROS
+  // NIÑOS / BEBÉS
   // ====================================================
 
-  const ages =
-    detectChildAges(text);
-
   if (
-    ages.length ||
-    matches(
-      text,
-      [
-        "niño",
-        "niños",
-        "hijo",
-        "hijos",
-        "hija",
-        "hijas"
-      ]
-    )
+    childAges.length ||
+    matches(text, [
+      "niño",
+      "niños",
+      "hijo",
+      "hijos",
+      "hija",
+      "hijas"
+    ])
   ) {
     flags.hasChildren = true;
 
     if (
-      ages.some(
-        age =>
-          age >= 0 &&
-          age <= 3
+      childAges.some(
+        age => age <= 3
       )
     ) {
       activeModules.push(
@@ -268,7 +248,7 @@ export function detectModules(
     }
 
     if (
-      ages.some(
+      childAges.some(
         age =>
           age >= 4 &&
           age <= 7
@@ -280,7 +260,7 @@ export function detectModules(
     }
 
     if (
-      ages.some(
+      childAges.some(
         age =>
           age >= 8 &&
           age <= 12
@@ -292,7 +272,7 @@ export function detectModules(
     }
 
     if (
-      !ages.length
+      childAges.length === 0
     ) {
       activeModules.push(
         "ninos_generico"
@@ -301,22 +281,16 @@ export function detectModules(
   }
 
   if (
-    matches(
-      text,
-      [
-        "bebe",
-        "bebé",
-        "pañales",
-        "carrito de bebe",
-        "carrito de bebé"
-      ]
-    )
+    matches(text, [
+      "bebe",
+      "bebé",
+      "pañales",
+      "carrito de bebe",
+      "carrito de bebé"
+    ])
   ) {
     flags.hasBaby = true;
-
-    activeModules.push(
-      "bebe"
-    );
+    activeModules.push("bebe");
   }
 
   // ====================================================
@@ -324,80 +298,64 @@ export function detectModules(
   // ====================================================
 
   if (
-    matches(
-      text,
-      [
-        "podemos lavar",
-        "lavar ropa",
-        "lavaremos ropa",
-        "lavado frecuente",
-        "lavanderia",
-        "lavandería"
-      ]
-    )
+    matches(text, [
+      "podemos lavar",
+      "lavar ropa",
+      "lavaremos ropa",
+      "lavado frecuente",
+      "lavanderia",
+      "lavandería",
+      "lavar casi todos los dias",
+      "lavar casi todos los días"
+    ])
   ) {
-    flags.frequentLaundry =
-      true;
-
+    flags.frequentLaundry = true;
     activeModules.push(
       "lavado_frecuente"
     );
   }
 
   if (
-    matches(
-      text,
-      [
-        "llevamos nuestras mochilas",
-        "llevaremos nuestras mochilas",
-        "llevo mi mochila",
-        "cargamos mochila",
-        "mochila propia",
-        "transportamos nuestro equipaje"
-      ]
-    )
+    matches(text, [
+      "llevamos nuestras mochilas",
+      "llevaremos nuestras mochilas",
+      "llevo mi mochila",
+      "mochila propia",
+      "cargamos mochila",
+      "transportamos nuestro equipaje",
+      "llevamos nosotros mismos nuestras mochilas"
+    ])
   ) {
-    flags.ownBackpack =
-      true;
-
+    flags.ownBackpack = true;
     activeModules.push(
       "mochila_propia"
     );
   }
 
   if (
-    matches(
-      text,
-      [
-        "solo equipaje de cabina",
-        "solo cabina",
-        "equipaje de mano",
-        "maleta de cabina"
-      ]
-    )
+    matches(text, [
+      "solo equipaje de cabina",
+      "solo cabina",
+      "equipaje de mano",
+      "maleta de cabina"
+    ])
   ) {
     flags.cabinOnly = true;
-
     activeModules.push(
       "equipaje_cabina"
     );
   }
 
   if (
-    matches(
-      text,
-      [
-        "todo el dia fuera",
-        "todo el día fuera",
-        "jornadas largas",
-        "pasaremos el dia",
-        "pasaremos el día"
-      ]
-    )
+    matches(text, [
+      "todo el dia fuera",
+      "todo el día fuera",
+      "jornadas largas",
+      "pasaremos el dia",
+      "pasaremos el día"
+    ])
   ) {
-    flags.longDaysOut =
-      true;
-
+    flags.longDaysOut = true;
     activeModules.push(
       "jornadas_largas_fuera"
     );
@@ -408,68 +366,54 @@ export function detectModules(
   // ====================================================
 
   if (
-    matches(
-      text,
-      [
-        "avion",
-        "avión",
-        "vuelo",
-        "aeropuerto"
-      ]
-    )
+    matches(text, [
+      "avion",
+      "avión",
+      "vuelo",
+      "aeropuerto"
+    ])
   ) {
-    activeModules.push(
-      "avion"
-    );
+    flags.plane = true;
+    activeModules.push("avion");
   }
 
   if (
-    matches(
-      text,
-      [
-        "tren",
-        "interrail"
-      ]
-    )
+    matches(text, [
+      "tren",
+      "interrail"
+    ])
   ) {
-    activeModules.push(
-      "tren"
-    );
+    flags.train = true;
+    activeModules.push("tren");
   }
 
   if (
-    matches(
-      text,
-      [
-        "coche",
-        "coche propio"
-      ]
-    )
+    matches(text, [
+      "coche",
+      "coche propio"
+    ])
   ) {
-    activeModules.push(
-      "coche"
-    );
+    flags.car = true;
+    activeModules.push("coche");
   }
 
   // ====================================================
-  // TIPO DE VIAJE
+  // MULTIDESTINO / URBANO
   // ====================================================
 
   if (
-    matches(
-      text,
-      [
-        "tokio",
-        "tokyo",
-        "kioto",
-        "kyoto",
-        "osaka",
-        "interrail",
-        "varias ciudades",
-        "varios hoteles",
-        "cambio de hotel"
-      ]
-    )
+    matches(text, [
+      "tokio",
+      "tokyo",
+      "kioto",
+      "kyoto",
+      "osaka",
+      "interrail",
+      "varias ciudades",
+      "varios hoteles",
+      "cambio de hotel",
+      "cambios de hotel"
+    ])
   ) {
     activeModules.push(
       "urbano_multidestino"
@@ -481,16 +425,13 @@ export function detectModules(
   // ====================================================
 
   if (
-    matches(
-      text,
-      [
-        "noviembre",
-        "diciembre",
-        "enero",
-        "febrero",
-        "invierno"
-      ]
-    )
+    matches(text, [
+      "noviembre",
+      "diciembre",
+      "enero",
+      "febrero",
+      "invierno"
+    ])
   ) {
     activeModules.push(
       "clima_frio_variable"
@@ -498,16 +439,13 @@ export function detectModules(
   }
 
   if (
-    matches(
-      text,
-      [
-        "junio",
-        "julio",
-        "agosto",
-        "verano",
-        "calor"
-      ]
-    )
+    matches(text, [
+      "junio",
+      "julio",
+      "agosto",
+      "verano",
+      "calor"
+    ])
   ) {
     activeModules.push(
       "clima_calido"
@@ -515,19 +453,15 @@ export function detectModules(
   }
 
   return {
-    activeModules:
-      [
-        ...new Set(
-          activeModules
-        )
-      ],
+    activeModules: [
+      ...new Set(activeModules)
+    ],
 
     durationDays,
 
     travellers,
 
-    childAges:
-      ages,
+    childAges,
 
     flags
   };
@@ -589,9 +523,7 @@ function detectDurationDays(
     );
 
   if (dayMatch) {
-    return Number(
-      dayMatch[1]
-    );
+    return Number(dayMatch[1]);
   }
 
   const weekMatch =
@@ -630,26 +562,18 @@ function detectTravellers(
     );
 
   if (
-    text.includes(
-      "solo"
-    )
+    text.includes("solo")
   ) {
     return {
       adults: 1,
-      children: null
+      children: 0
     };
   }
 
   if (
-    text.includes(
-      "pareja"
-    ) ||
-    text.includes(
-      "mi mujer"
-    ) ||
-    text.includes(
-      "mi marido"
-    )
+    text.includes("pareja") ||
+    text.includes("mi mujer") ||
+    text.includes("mi marido")
   ) {
     return {
       adults: 2,
@@ -698,9 +622,7 @@ function detectChildAges(
 
 
 function normalize(text) {
-  return String(
-    text || ""
-  )
+  return String(text || "")
     .toLowerCase()
     .normalize("NFD")
     .replace(
