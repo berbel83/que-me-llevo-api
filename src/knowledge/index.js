@@ -643,6 +643,111 @@ const MODULES = {
     ]
   },
 
+    excursion_caminata: {
+    items: [
+      item(
+        "calzado_excursion",
+        "Excursiones",
+        "Calzado cómodo con buen agarre",
+        "recommended",
+        "Útil para una excursión con terreno irregular o bastantes horas caminando.",
+        true
+      ),
+      item(
+        "mochila_dia_excursion",
+        "Excursiones",
+        "Mochila pequeña para la excursión",
+        "recommended",
+        "Permite llevar agua, una capa extra y lo necesario sin cargar el equipaje principal.",
+        true
+      )
+    ]
+  },
+
+  bicicleta_puntual: {
+    items: [
+      item(
+        "ropa_comoda_bici",
+        "Actividades",
+        "Ropa cómoda para la actividad en bicicleta",
+        "recommended",
+        "Una actividad puntual en bicicleta no requiere equipamiento de cicloturismo, pero sí ropa que permita moverse con comodidad.",
+        false
+      )
+    ]
+  },
+
+  barco_puntual: {
+    items: [
+      item(
+        "capa_viento_barco",
+        "Actividades",
+        "Capa ligera para viento",
+        "recommended",
+        "En barco puede sentirse más viento y una temperatura menor que en tierra.",
+        true
+      )
+    ]
+  },
+
+  actividad_agua: {
+    items: [
+      item(
+        "bolsa_estanca_pequena",
+        "Actividades con agua",
+        "Bolsa estanca o funda impermeable pequeña",
+        "recommended",
+        "Ayuda a proteger móvil, documentación y objetos sensibles durante actividades con agua o mucha humedad.",
+        true
+      )
+    ]
+  },
+
+  safari_fauna: {
+    items: [
+      item(
+        "repelente_insectos",
+        "Safari y naturaleza",
+        "Repelente de insectos adecuado al destino",
+        "essential",
+        "Las actividades de naturaleza pueden aumentar la exposición a insectos; conviene elegir el producto según el destino y las recomendaciones oficiales.",
+        true
+      ),
+      item(
+        "ropa_safari_ligera",
+        "Safari y naturaleza",
+        "Ropa cómoda y discreta para actividades de observación de fauna",
+        "recommended",
+        "Prioriza prendas prácticas y adaptadas al clima previsto y al tipo de actividad.",
+        false
+      ),
+      item(
+        "prismaticos",
+        "Safari y naturaleza",
+        "Prismáticos compactos",
+        "optional",
+        "Pueden mejorar mucho la observación de fauna sin necesidad de acercarse.",
+        true
+      )
+    ],
+    verifications: [
+      "Consultar recomendaciones sanitarias y de seguridad oficiales específicas del destino y de las actividades de naturaleza previstas."
+    ]
+  },
+
+  evento_formal: {
+    items: [
+      item(
+        "conjunto_arreglado",
+        "Ocasiones especiales",
+        "Un conjunto algo más arreglado",
+        "recommended",
+        "Evita tener que improvisar si el itinerario incluye una cena o evento con un ambiente más formal.",
+        false
+      )
+    ]
+  },
+
   urbano_multidestino: {
     items: [
       item(
@@ -666,17 +771,23 @@ const MODULES = {
 };
 
 export function buildKnowledge(
-  activeModules
+  activeModules,
+  activityModules = []
 ) {
   const items = [];
   const verifications = [];
 
   const seenIds = new Set();
 
-  for (
-    const moduleName
-    of activeModules
-  ) {
+  const allModules = [
+  ...activeModules,
+  ...activityModules
+];
+
+for (
+  const moduleName
+  of allModules
+) {
     const module =
       MODULES[moduleName];
 
