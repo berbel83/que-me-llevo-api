@@ -1,4 +1,3 @@
-import { callGroq } from "./groq.js";
 import { detectModules } from "../rules/moduleDetector.js";
 import { buildKnowledge } from "../knowledge/index.js";
 import { applyQuantityRules } from "../rules/quantities.js";
@@ -8,19 +7,18 @@ import {
   dedupeVerifications
 } from "../rules/safety.js";
 
-
 export async function handleGenerate(body, env) {
-  const trip = body.trip;
-  const analysis = body.analysis;
+  const trip = body.trip || "";
+  const analysis = body.analysis || {};
   const answers = body.answers || {};
 
-  if (!trip || !analysis) {
-    throw new Error("Faltan datos del viaje.");
+  if (!trip) {
+    throw new Error("Falta la descripción del viaje.");
   }
 
-  // ====================================================
+  // ======================================================
   // 1. DETECTAR CONTEXTO Y MÓDULOS
-  // ====================================================
+  // ======================================================
 
   const context = detectModules(
     trip,
@@ -28,256 +26,74 @@ export async function handleGenerate(body, env) {
     answers
   );
 
-  // ====================================================
-  // 2. CONSTRUIR BASE DE CONOCIMIENTO
-  // ====================================================
+  // ======================================================
+  // 2. CONSTRUIR CONOCIMIENTO
+  // ======================================================
 
   const knowledge = buildKnowledge(
     context.activeModules
   );
 
-  // ====================================================
-  // 3. APLICAR REGLAS DE CANTIDADES
-  // ====================================================
+  // ======================================================
+  // 3. APLICAR CANTIDADES
+  // ======================================================
 
-  const preparedItems = applyQuantityRules(
-    knowledge.items,
-    {
-      trip,
-      analysis,
-      answers,
-      context
-    }
-  );
+  const quantifiedItems =
+    applyQuantityRules(
+      knowledge.items,
+      {
+        context
+      }
+    );
 
-  // ====================================================
-  // 4. PEDIR A GROQ PERSONALIZACIÓN Y COMPLETITUD
-  // ====================================================
+  // ======================================================
+  // 4. AGRUPAR EN CATEGORÍAS
+  // ======================================================
 
-  const systemPrompt = `
-Eres el motor final de equipaje de "¿Qué me llevo?", una aplicación de TravelApps.
+  const rawCategories =
+    groupIntoCategories(
+      quantifiedItems
+    );
 
-Tu trabajo NO es inventar una lista desde cero.
+  // ======================================================
+  // 5. LIMPIEZA Y SEGURIDAD
+  // ======================================================
 
-El sistema ya ha analizado el viaje y ha construido una BASE DE CONOCIMIENTO con objetos recomendados.
-
-Debes:
-
-1. Mantener todos los objetos importantes recibidos.
-2. Adaptar las explicaciones al viaje concreto.
-3. Añadir objetos SOLO si detectas una carencia clara.
-4. Eliminar duplicados reales.
-5. Organizar los objetos en categorías claras.
-6. Mantener cantidades concretas cuando ya hayan sido calculadas.
-
-REGLA CENTRAL:
-
-UN CHECKBOX = UNA COSA COMPROBABLE.
-
-NO agrupes varias cosas diferentes en un único elemento.
-
-MAL:
-"3 conjuntos de ropa incluyendo ropa interior y calcetines"
-
-BIEN:
-"4 camisetas"
-"3 pantalones"
-"6 mudas de ropa interior"
-"6 pares de calcetines"
-
-Tampoco uses conceptos abstractos como objetos.
-
-MAL:
-"Seguridad"
-"Navegación"
-"Hidratación y alimentación"
-"Ropa adecuada"
-
-BIEN:
-"Botella reutilizable"
-"Batería externa"
-"Chubasquero ligero"
-
-NO elimines un objeto simplemente porque creas que otro se parece.
-
-Solo fusiona si son realmente el mismo objeto.
-
-NO INVENTES:
-- meteorología actual
-- normativa vigente
-- requisitos fronterizos
-- reglas actuales de aerolíneas
-- servicios concretos de hoteles
-- reglas concretas de parques
-
-Cuando algo dependa de información cambiante, añádelo a verification_needed.
-
-PREGUNTAS:
-No hagas preguntas. Esta fase solo genera la lista.
-
-AMAZON / PRODUCTOS:
-
-product_candidate=true únicamente cuando tenga sentido comparar o comprar ese producto.
-
-Debe ser false para:
-- documentos
-- medicación personal
-- ropa interior básica
-- camisetas básicas
-- pantalones básicos
-- pijamas
-- artículos personales obvios
-- teléfono móvil
-- alimentos genéricos
-
-Puede ser true para:
-- mochila técnica
-- calzado técnico
-- impermeable
-- batería externa
-- adaptadores
-- equipamiento especializado
-- productos donde comparar características aporte valor
-
-DÉJALO EN CASA:
-
-leave_home es opcional.
-
-Incluye únicamente objetos físicos concretos que realmente sea aconsejable no llevar en ESTE viaje.
-
-Nunca incluyas:
-- documentos
-- medicación
-- tareas
-- verificaciones
-- consejos
-- conceptos genéricos como "objetos no esenciales"
-
-Si no hay recomendaciones claras:
-"leave_home": []
-
-Devuelve SOLO JSON válido:
-
-{
-  "title": "",
-  "intro": "",
-  "packing_strategy": [],
-  "verification_needed": [],
-  "categories": [
-    {
-      "name": "",
-      "items": [
-        {
-          "id": "",
-          "name": "",
-          "priority": "essential",
-          "why": "",
-          "product_candidate": false,
-          "source_module": ""
-        }
-      ]
-    }
-  ],
-  "leave_home": []
-}
-`;
-
-  const userPrompt = `
-VIAJE ORIGINAL:
-
-${trip}
-
-ANÁLISIS DEL VIAJE:
-
-${JSON.stringify(analysis)}
-
-RESPUESTAS DEL USUARIO:
-
-${JSON.stringify(answers)}
-
-CONTEXTO DETECTADO:
-
-${JSON.stringify(context)}
-
-OBJETOS DE LA BASE DE CONOCIMIENTO:
-
-${JSON.stringify(preparedItems)}
-
-VERIFICACIONES BASE:
-
-${JSON.stringify(knowledge.verifications)}
-`;
-
-  const aiResult = await callGroq({
-    env,
-    systemPrompt,
-    userPrompt,
-    temperature: 0.15
-  });
-
-  // ====================================================
-  // 5. RECUPERAR CUALQUIER OBJETO BASE QUE GROQ OMITA
-  // ====================================================
-
-  let categories = Array.isArray(
-    aiResult.categories
-  )
-    ? aiResult.categories
-    : [];
-
-  categories = ensureKnowledgeItems(
-    categories,
-    preparedItems
-  );
-
-  // ====================================================
-  // 6. FILTROS FINALES
-  // ====================================================
-
-  categories = sanitizeCategories(
-    categories
-  );
-
-  const leaveHome = sanitizeLeaveHome(
-    aiResult.leave_home || []
-  );
+  const categories =
+    sanitizeCategories(
+      rawCategories
+    );
 
   const verificationNeeded =
     dedupeVerifications([
-      ...(Array.isArray(
-        analysis.verification_needed
-      )
-        ? analysis.verification_needed
-        : []),
-
-      ...(Array.isArray(
-        aiResult.verification_needed
-      )
-        ? aiResult.verification_needed
-        : []),
-
-      ...knowledge.verifications
+      ...(analysis.verification_needed || []),
+      ...(knowledge.verifications || [])
     ]);
 
-  // ====================================================
-  // 7. RESPUESTA
-  // ====================================================
+  // ======================================================
+  // 6. GENERAR PRESENTACIÓN LOCAL
+  // ======================================================
+
+  const presentation =
+    buildPresentation(
+      trip,
+      analysis,
+      context
+    );
+
+  // ======================================================
+  // 7. RESPUESTA FINAL
+  // ======================================================
 
   return {
     title:
-      aiResult.title ||
-      "Tu lista de equipaje",
+      presentation.title,
 
     intro:
-      aiResult.intro ||
-      "",
+      presentation.intro,
 
     packing_strategy:
-      Array.isArray(
-        aiResult.packing_strategy
-      )
-        ? aiResult.packing_strategy
-        : [],
+      presentation.packing_strategy,
 
     verification_needed:
       verificationNeeded,
@@ -285,17 +101,21 @@ ${JSON.stringify(knowledge.verifications)}
     categories,
 
     leave_home:
-      leaveHome,
+      sanitizeLeaveHome(
+        buildLeaveHome(context)
+      ),
 
     intelligence: {
+      source:
+        "local_engine",
+
+      ai_used: false,
+
       active_modules:
         context.activeModules,
 
       duration_days:
         context.durationDays,
-
-      travellers:
-        context.travellers,
 
       flags:
         context.flags
@@ -305,95 +125,288 @@ ${JSON.stringify(knowledge.verifications)}
 
 
 // ======================================================
-// GARANTIZAR OBJETOS DE LA BASE
+// AGRUPAR OBJETOS EN CATEGORÍAS
 // ======================================================
 
-function ensureKnowledgeItems(
-  categories,
-  knowledgeItems
-) {
-  const safeCategories =
-    Array.isArray(categories)
-      ? categories
-      : [];
+function groupIntoCategories(items) {
+  const categoryMap =
+    new Map();
 
-  for (const category of safeCategories) {
-    if (!Array.isArray(category.items)) {
-      category.items = [];
+  for (const item of items) {
+    const categoryName =
+      item.category ||
+      "Otros";
+
+    if (
+      !categoryMap.has(
+        categoryName
+      )
+    ) {
+      categoryMap.set(
+        categoryName,
+        []
+      );
     }
+
+    categoryMap
+      .get(categoryName)
+      .push(item);
   }
 
-  const allItems = () =>
-    safeCategories.flatMap(
-      category => category.items || []
-    );
+  return Array.from(
+    categoryMap.entries()
+  ).map(
+    ([name, items]) => ({
+      name,
 
-  for (const baseItem of knowledgeItems) {
-    const existsById =
-      allItems().some(
-        item =>
-          item.id &&
-          baseItem.id &&
-          item.id === baseItem.id
-      );
+      items: items.map(
+        item => ({
+          id: item.id,
 
-    if (existsById) {
-      continue;
-    }
+          name: item.name,
 
-    let category =
-      safeCategories.find(
-        item =>
-          normalize(item.name) ===
-          normalize(baseItem.category)
-      );
+          priority:
+            item.priority ||
+            "recommended",
 
-    if (!category) {
-      category = {
-        name: baseItem.category,
-        items: []
-      };
+          why:
+            item.why || "",
 
-      safeCategories.push(category);
-    }
+          product_candidate:
+            Boolean(
+              item.product_candidate
+            ),
 
-    category.items.push({
-      id: baseItem.id,
-      name: baseItem.name,
-      priority: baseItem.priority,
-      why: baseItem.why,
-      product_candidate:
-        Boolean(
-          baseItem.product_candidate
-        ),
-      source_module:
-        baseItem.source_module
-    });
-  }
-
-  return safeCategories;
+          source_module:
+            item.source_module
+        })
+      )
+    })
+  );
 }
 
 
 // ======================================================
-// UTILIDAD LOCAL
+// PRESENTACIÓN
 // ======================================================
 
-function normalize(text) {
-  return String(text || "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(
-      /[\u0300-\u036f]/g,
-      ""
-    )
-    .replace(
-      /[^a-z0-9\s]/g,
-      " "
-    )
-    .replace(
-      /\s+/g,
-      " "
-    )
-    .trim();
+function buildPresentation(
+  trip,
+  analysis,
+  context
+) {
+  const destination =
+    analysis
+      ?.trip_profile
+      ?.destination_or_experience ||
+    detectSimpleDestination(trip) ||
+    "tu viaje";
+
+  const duration =
+    context.durationDays
+      ? `${context.durationDays} días`
+      : "";
+
+  const isCamino =
+    context.activeModules.includes(
+      "peregrinacion_camino"
+    );
+
+  const isThemePark =
+    context.activeModules.includes(
+      "parque_tematico"
+    );
+
+  const isCamping =
+    context.activeModules.includes(
+      "camping"
+    );
+
+  let title =
+    `Lista de equipaje para ${destination}`;
+
+  let intro =
+    duration
+      ? `Prepara lo necesario para ${duration} en ${destination}, con una lista adaptada a las características de tu viaje.`
+      : `Prepara lo necesario para ${destination} con una lista adaptada a las características de tu viaje.`;
+
+  const packingStrategy = [];
+
+  if (isCamino) {
+    title =
+      `Packing List para ${destination}`;
+
+    intro =
+      duration
+        ? `Prepara tu equipaje para ${duration} de Camino, priorizando comodidad, poco peso y artículos realmente útiles durante las etapas.`
+        : `Prepara tu equipaje para el Camino, priorizando comodidad, poco peso y artículos realmente útiles durante las etapas.`;
+
+    packingStrategy.push(
+      "Prioriza poco peso y evita duplicar prendas o accesorios."
+    );
+
+    packingStrategy.push(
+      "Usa ropa cómoda, transpirable y adecuada para caminar varios días consecutivos."
+    );
+  }
+
+  if (isThemePark) {
+    intro =
+      duration
+        ? `Prepara el equipaje para ${duration} en ${destination}, pensando en jornadas largas, comodidad y cambios de tiempo.`
+        : `Prepara el equipaje para ${destination}, pensando en jornadas largas, comodidad y cambios de tiempo.`;
+
+    packingStrategy.push(
+      "Prioriza ropa cómoda y calzado adecuado para pasar muchas horas caminando."
+    );
+
+    packingStrategy.push(
+      "Lleva en la mochila diaria solo lo necesario para evitar cargar peso durante toda la jornada."
+    );
+  }
+
+  if (isCamping) {
+    packingStrategy.push(
+      "Organiza por separado el material de descanso, higiene y uso diario."
+    );
+  }
+
+  if (
+    context.flags.frequentLaundry
+  ) {
+    packingStrategy.push(
+      "Aprovecha la posibilidad de lavar para reducir la cantidad de ropa."
+    );
+  }
+
+  if (
+    context.flags.ownBackpack
+  ) {
+    packingStrategy.push(
+      "Cada objeto debe justificar su peso porque transportarás personalmente el equipaje."
+    );
+  }
+
+  if (
+    context.flags.cabinOnly
+  ) {
+    packingStrategy.push(
+      "Prioriza prendas combinables y formatos compactos para aprovechar el equipaje de cabina."
+    );
+  }
+
+  if (
+    context.flags.hasChildren
+  ) {
+    packingStrategy.push(
+      "Mantén accesibles los artículos infantiles que puedan necesitarse durante el día."
+    );
+  }
+
+  if (
+    packingStrategy.length === 0
+  ) {
+    packingStrategy.push(
+      "Prioriza artículos útiles y versátiles evitando duplicados innecesarios."
+    );
+
+    packingStrategy.push(
+      "Ajusta las cantidades a la duración y a la posibilidad de lavar durante el viaje."
+    );
+  }
+
+  return {
+    title,
+
+    intro,
+
+    packing_strategy:
+      packingStrategy.slice(
+        0,
+        4
+      )
+  };
+}
+
+
+// ======================================================
+// COSAS QUE PUEDEN QUEDARSE EN CASA
+// ======================================================
+
+function buildLeaveHome(context) {
+  const items = [];
+
+  if (
+    context.flags.ownBackpack
+  ) {
+    items.push({
+      name:
+        "Prendas y objetos duplicados que no tengan un uso claro",
+
+      why:
+        "Cada objeto innecesario aumenta el peso que tendrás que transportar."
+    });
+  }
+
+  if (
+    context.flags.cabinOnly
+  ) {
+    items.push({
+      name:
+        "Envases grandes que puedan sustituirse por formatos de viaje",
+
+      why:
+        "Ocupan espacio innecesario y pueden estar sujetos a restricciones de transporte."
+    });
+  }
+
+  return items;
+}
+
+
+// ======================================================
+// DESTINO SIMPLE DE RESPALDO
+// ======================================================
+
+function detectSimpleDestination(
+  trip
+) {
+  const text =
+    String(trip || "");
+
+  const known = [
+    {
+      match:
+        /camino de santiago/i,
+
+      name:
+        "el Camino de Santiago"
+    },
+
+    {
+      match:
+        /disneyland\s*(par[ií]s)?/i,
+
+      name:
+        "Disneyland París"
+    },
+
+    {
+      match:
+        /port\s?aventura/i,
+
+      name:
+        "PortAventura"
+    }
+  ];
+
+  for (const item of known) {
+    if (
+      item.match.test(text)
+    ) {
+      return item.name;
+    }
+  }
+
+  return "";
 }
