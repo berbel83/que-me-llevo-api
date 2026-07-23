@@ -576,7 +576,115 @@ const activityModules = [];
       "clima_calido"
     );
   }
+  // ====================================================
+  // CONTEXTOS ESPECIALES DETECTADOS EN EL ANÁLISIS
+  // ====================================================
 
+  const specialContexts =
+    analysis?.trip_profile?.special_contexts || [];
+
+  const specialText =
+    normalize(
+      Array.isArray(specialContexts)
+        ? specialContexts.join(" ")
+        : String(specialContexts || "")
+    );
+
+  if (
+    matches(specialText, [
+      "excursion puntual con caminata",
+      "excursión puntual con caminata"
+    ])
+  ) {
+    activityModules.push(
+      "excursion_caminata"
+    );
+  }
+
+  if (
+    matches(specialText, [
+      "excursion puntual en barco",
+      "excursión puntual en barco"
+    ])
+  ) {
+    activityModules.push(
+      "barco_puntual"
+    );
+  }
+
+  if (
+    matches(specialText, [
+      "actividad puntual en bicicleta"
+    ])
+  ) {
+    activityModules.push(
+      "bicicleta_puntual"
+    );
+  }
+
+  if (
+    matches(specialText, [
+      "actividad de safari o fauna",
+      "fauna y actividades al aire libre"
+    ])
+  ) {
+    activityModules.push(
+      "safari_fauna"
+    );
+  }
+
+  if (
+    matches(specialText, [
+      "actividad con agua o humedad"
+    ])
+  ) {
+    activityModules.push(
+      "actividad_agua"
+    );
+  }
+
+  if (
+    matches(specialText, [
+      "viaje multidestino",
+      "viaje urbano multidestino"
+    ])
+  ) {
+    activeModules.push(
+      "urbano_multidestino"
+    );
+  }
+
+  if (
+    matches(specialText, [
+      "viaje en avion",
+      "viaje en avión"
+    ])
+  ) {
+    activeModules.push(
+      "avion"
+    );
+  }
+
+  if (
+    matches(specialText, [
+      "desplazamientos en tren"
+    ])
+  ) {
+    activeModules.push(
+      "tren"
+    );
+  }
+
+  if (
+    matches(specialText, [
+      "coche de alquiler",
+      "coche propio"
+    ])
+  ) {
+    activeModules.push(
+      "coche"
+    );
+  }
   return {
   activeModules: [
     ...new Set(activeModules)
