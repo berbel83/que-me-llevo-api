@@ -31,8 +31,9 @@ export async function handleGenerate(body, env) {
   // ======================================================
 
   const knowledge = buildKnowledge(
-    context.activeModules
-  );
+  context.activeModules,
+  context.activityModules || []
+);
 
   // ======================================================
   // 3. APLICAR CANTIDADES
@@ -114,6 +115,9 @@ export async function handleGenerate(body, env) {
       active_modules:
         context.activeModules,
 
+activity_modules:
+  context.activityModules || [],
+      
       duration_days:
         context.durationDays,
 
