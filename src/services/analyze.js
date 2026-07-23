@@ -35,7 +35,7 @@ Prioriza preguntas sobre:
 - posibilidad de lavar ropa
 - restricciones de equipaje
 - niños/bebés
-- actividades especiales que cambien qué llevar
+- actividades especiales YA MENCIONADAS que cambien qué llevar
 
 NO preguntes:
 - restaurantes
@@ -44,6 +44,7 @@ NO preguntes:
 - preparación física genérica
 - experiencia previa genérica
 - actividades hipotéticas no mencionadas
+- "si harán alguna actividad especial" cuando el usuario no ha dicho nada parecido
 - detalles que puedan resolverse con una recomendación
 
 Si la descripción ya contiene suficiente información para preparar una buena lista, devuelve:
@@ -93,10 +94,105 @@ Devuelve SOLO JSON válido:
 }
 `;
 
-  return await callGroq({
+  const result = await callGroq({
     env,
     systemPrompt,
     userPrompt: trip,
-    temperature: 0.15
+    temperature: 0.1
   });
+
+  return {
+    ...result,
+    questions: filterQuestions(
+      result.questions || [],
+      trip
+    )
+  };
+}
+
+
+// ======================================================
+// FILTRO DE PREGUNTAS INNECESARIAS / ESPECULATIVAS
+// ======================================================
+
+function filterQuestions(
+  questions,
+  trip
+) {
+  if (!Array.isArray(questions)) {
+    return [];
+  }
+
+  const tripText =
+    normalize(trip);
+
+  return questions.filter(question => {
+    const text =
+      normalize(
+        `${question.question || ""} ${question.reason || ""}`
+      );
+
+    // Preguntas de experiencia o preparación física
+    if (
+      /experiencia previa|preparacion fisica|preparación física|condicion fisica|condición física/.test(
+        text
+      )
+    ) {
+      return false;
+    }
+
+    // Actividades hipotéticas no mencionadas
+    if (
+      /alguna actividad especial|otras actividades|actividad adicional|ciclismo|visitas a lugares especificos|visitas a lugares específicos/.test(
+        text
+      )
+    ) {
+      const activityWasMentioned =
+        /ciclismo|bicicleta|bici|actividad especial|actividad adicional/.test(
+          tripText
+        );
+
+      if (!activityWasMentioned) {
+        return false;
+      }
+    }
+
+    // Lavandería solo merece pregunta si realmente puede cambiar equipaje
+    if (
+      /lavanderia|lavandería|lavar ropa/.test(
+        text
+      )
+    ) {
+      const longOrLimitedTrip =
+        /8 dias|8 días|9 dias|9 días|10 dias|10 días|11 dias|11 días|12 dias|12 días|13 dias|13 días|14 dias|14 días|15 dias|15 días|semana y media|dos semanas|equipaje de cabina|solo cabina|mochila propia|camino de santiago|senderismo varios dias|senderismo varios días/.test(
+          tripText
+        );
+
+      if (!longOrLimitedTrip) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+}
+
+
+function normalize(text) {
+  return String(text || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(
+      /[\u0300-\u036f]/g,
+      ""
+    )
+    .replace(
+      /[^a-z0-9\s]/g,
+      " "
+    )
+    .replace(
+      /\s+/g,
+      " "
+    )
+    .trim();
 }
