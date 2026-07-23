@@ -1,4 +1,5 @@
 import { callGroq } from "./groq.js";
+import { detectModules } from "../rules/moduleDetector.js";
 
 export async function handleAnalyze(body, env) {
   const trip = body.trip;
@@ -7,6 +8,38 @@ export async function handleAnalyze(body, env) {
     throw new Error("Falta la descripción del viaje.");
   }
 
+  // ======================================================
+  // 1. ANÁLISIS LOCAL GRATIS
+  // ======================================================
+
+  const local = localAnalyze(trip);
+
+  // Si entendemos suficientemente bien el viaje,
+  // NO llamamos a Groq.
+  if (local.confidence >= 0.8) {
+    return {
+      valid: true,
+      interpretation: local.interpretation,
+      trip_profile: local.trip_profile,
+      general_warnings: [],
+      verification_needed:
+        local.verification_needed,
+      questions:
+        filterQuestions(
+          local.questions,
+          trip
+        ),
+      intelligence: {
+        source: "local",
+        confidence: local.confidence
+      }
+    };
+  }
+
+  // ======================================================
+  // 2. SOLO SI HAY AMBIGÜEDAD, USAMOS GROQ
+  // ======================================================
+
   const systemPrompt = `
 Eres el analizador inteligente de "¿Qué me llevo?", una aplicación de TravelApps.
 
@@ -14,40 +47,17 @@ NO debes generar todavía la checklist.
 
 Tu objetivo es comprender el viaje y preguntar únicamente aquello que pueda cambiar de forma importante qué debe llevar el usuario.
 
-REGLA FUNDAMENTAL:
-
 PREGUNTAR TIENE UN COSTE.
 
 Haz normalmente entre 0 y 4 preguntas.
 
 Solo pregunta si DOS RESPUESTAS DIFERENTES provocarían cambios IMPORTANTES Y CONCRETOS en el equipaje.
 
-NO preguntes por curiosidad.
+NO preguntes por experiencia previa genérica.
+NO preguntes por preparación física genérica.
+NO preguntes por actividades hipotéticas no mencionadas.
 
-NO preguntes por experiencia previa en senderismo o viajes, salvo que exista una actividad técnica muy específica donde esa respuesta cambie realmente el equipo necesario.
-
-Para un Camino de Santiago normal:
-NO preguntes por experiencia previa.
-
-Prioriza preguntas sobre:
-- alojamiento si cambia equipamiento
-- transporte de equipaje
-- posibilidad de lavar ropa
-- restricciones de equipaje
-- niños/bebés
-- actividades especiales YA MENCIONADAS que cambien qué llevar
-
-NO preguntes:
-- restaurantes
-- atracciones favoritas
-- horarios turísticos
-- preparación física genérica
-- experiencia previa genérica
-- actividades hipotéticas no mencionadas
-- "si harán alguna actividad especial" cuando el usuario no ha dicho nada parecido
-- detalles que puedan resolverse con una recomendación
-
-Si la descripción ya contiene suficiente información para preparar una buena lista, devuelve:
+Si la descripción ya contiene suficiente información:
 "questions": []
 
 NO INVENTES:
@@ -57,12 +67,11 @@ NO INVENTES:
 - reglas actuales de aerolíneas
 - servicios exactos de alojamientos
 
-Si algo requiere información actual, añádelo a verification_needed.
+Si algo requiere información actual:
+añádelo a verification_needed.
 
-Si el viaje es actualmente imposible como turismo real, por ejemplo:
-"Voy a Marte tres días"
-
-devuelve valid:false.
+Si el viaje es actualmente imposible como turismo real:
+"valid": false
 
 Devuelve SOLO JSON válido:
 
@@ -103,16 +112,440 @@ Devuelve SOLO JSON válido:
 
   return {
     ...result,
-    questions: filterQuestions(
-      result.questions || [],
-      trip
-    )
+
+    questions:
+      filterQuestions(
+        result.questions || [],
+        trip
+      ),
+
+    intelligence: {
+      source: "groq_fallback",
+      confidence:
+        local.confidence
+    }
   };
 }
 
 
 // ======================================================
-// FILTRO DE PREGUNTAS INNECESARIAS / ESPECULATIVAS
+// ANALIZADOR LOCAL
+// ======================================================
+
+function localAnalyze(trip) {
+  const text = normalize(trip);
+
+  const durationDays =
+    detectDurationDays(text);
+
+  const childAges =
+    detectChildAges(text);
+
+  const tripTypes = [];
+
+  let destination = "";
+  let accommodation =
+    "desconocido";
+
+  let luggageConstraints =
+    "desconocido";
+
+  const specialContexts = [];
+
+  const verificationNeeded = [];
+
+  const questions = [];
+
+  let confidence = 0.35;
+
+  // ======================================================
+  // DESTINOS / EXPERIENCIAS MUY RECONOCIBLES
+  // ======================================================
+
+  if (
+    text.includes(
+      "camino de santiago"
+    )
+  ) {
+    destination =
+      "Camino de Santiago";
+
+    tripTypes.push(
+      "peregrinación",
+      "senderismo"
+    );
+
+    confidence += 0.3;
+  }
+
+  if (
+    text.includes("disneyland")
+  ) {
+    destination =
+      "Disneyland París";
+
+    tripTypes.push(
+      "parque temático"
+    );
+
+    confidence += 0.3;
+  }
+
+  if (
+    text.includes("portaventura") ||
+    text.includes("port aventura")
+  ) {
+    destination =
+      "PortAventura";
+
+    tripTypes.push(
+      "parque temático"
+    );
+
+    confidence += 0.3;
+  }
+
+  if (
+    /crucero/.test(text)
+  ) {
+    tripTypes.push(
+      "crucero"
+    );
+
+    specialContexts.push(
+      "viaje en crucero"
+    );
+
+    confidence += 0.2;
+  }
+
+  if (
+    /safari/.test(text)
+  ) {
+    tripTypes.push(
+      "safari"
+    );
+
+    specialContexts.push(
+      "actividad de safari"
+    );
+
+    confidence += 0.2;
+  }
+
+  if (
+    /senderismo|trekking/.test(
+      text
+    )
+  ) {
+    tripTypes.push(
+      "senderismo"
+    );
+
+    confidence += 0.15;
+  }
+
+  if (
+    /playa|costa/.test(text)
+  ) {
+    tripTypes.push(
+      "playa"
+    );
+
+    confidence += 0.15;
+  }
+
+  // ======================================================
+  // ALOJAMIENTO
+  // ======================================================
+
+  if (
+    /hotel/.test(text)
+  ) {
+    accommodation = "hotel";
+    confidence += 0.1;
+  }
+
+  if (
+    /albergue/.test(text)
+  ) {
+    accommodation =
+      "albergue";
+
+    confidence += 0.1;
+  }
+
+  if (
+    /apartamento/.test(text)
+  ) {
+    accommodation =
+      "apartamento";
+
+    confidence += 0.1;
+  }
+
+  if (
+    /camping|acampada/.test(
+      text
+    )
+  ) {
+    accommodation =
+      "camping";
+
+    confidence += 0.1;
+  }
+
+  // ======================================================
+  // EQUIPAJE / LOGÍSTICA
+  // ======================================================
+
+  if (
+    /mochila propia|nuestras mochilas|llevaremos nosotros mismos nuestras mochilas/.test(
+      text
+    )
+  ) {
+    luggageConstraints =
+      "mochila propia";
+
+    confidence += 0.1;
+  }
+
+  if (
+    /solo cabina|equipaje de cabina|equipaje de mano/.test(
+      text
+    )
+  ) {
+    luggageConstraints =
+      "equipaje de cabina";
+
+    confidence += 0.1;
+  }
+
+  // ======================================================
+  // DURACIÓN
+  // ======================================================
+
+  if (durationDays) {
+    confidence += 0.1;
+  }
+
+  // ======================================================
+  // VIAJEROS
+  // ======================================================
+
+  let travellers =
+    "desconocido";
+
+  if (
+    /mi mujer|mi marido|pareja/.test(
+      text
+    )
+  ) {
+    travellers = "2 adultos";
+    confidence += 0.1;
+  }
+
+  if (
+    childAges.length
+  ) {
+    travellers =
+      `adultos con niños de ${childAges.join(
+        " y "
+      )} años`;
+
+    confidence += 0.15;
+  }
+
+  // ======================================================
+  // ÉPOCA
+  // ======================================================
+
+  const seasonOrDates =
+    detectSeason(text);
+
+  if (seasonOrDates) {
+    confidence += 0.1;
+  }
+
+  // ======================================================
+  // PREGUNTAS SOLO SI DE VERDAD FALTA ALGO IMPORTANTE
+  // ======================================================
+
+  if (
+    tripTypes.includes(
+      "peregrinación"
+    ) &&
+    accommodation ===
+      "desconocido"
+  ) {
+    questions.push({
+      id: "alojamiento",
+      question:
+        "¿Dónde dormirás principalmente durante el Camino?",
+      type: "single",
+      options: [
+        "Albergues",
+        "Hoteles o pensiones",
+        "Mixto"
+      ],
+      reason:
+        "El alojamiento cambia lo que necesitas para dormir, ducharte y organizar el equipaje."
+    });
+  }
+
+  if (
+    tripTypes.includes(
+      "peregrinación"
+    ) &&
+    luggageConstraints ===
+      "desconocido"
+  ) {
+    questions.push({
+      id: "equipaje",
+      question:
+        "¿Llevarás tú mismo la mochila durante las etapas?",
+      type: "single",
+      options: [
+        "Sí",
+        "No, usaré transporte de equipaje"
+      ],
+      reason:
+        "Esto cambia mucho el peso y la cantidad de ropa que conviene llevar."
+    });
+  }
+
+  // Disneyland / parque con niños:
+  // no preguntamos lavandería por defecto.
+  if (
+    tripTypes.includes(
+      "parque temático"
+    ) &&
+    childAges.length
+  ) {
+    // De momento cero preguntas
+  }
+
+  // ======================================================
+  // VERIFICACIONES
+  // ======================================================
+
+  if (seasonOrDates) {
+    verificationNeeded.push(
+      "Consultar la previsión meteorológica concreta pocos días antes de salir."
+    );
+  }
+
+  // ======================================================
+  // DETECTAR VIAJES IMPOSIBLES
+  // ======================================================
+
+  if (
+    /\bmarte\b/.test(text)
+  ) {
+    return {
+      confidence: 1,
+
+      interpretation:
+        "Viaje a Marte",
+
+      trip_profile: {
+        destination_or_experience:
+          "Marte",
+
+        trip_type: [],
+
+        duration:
+          durationDays
+            ? `${durationDays} días`
+            : "",
+
+        season_or_dates:
+          seasonOrDates || "",
+
+        travellers,
+
+        activity_level:
+          "desconocido",
+
+        accommodation:
+          "desconocido",
+
+        luggage_constraints:
+          "desconocido",
+
+        special_contexts: []
+      },
+
+      verification_needed: [],
+
+      questions: [],
+
+      invalid: true
+    };
+  }
+
+  confidence =
+    Math.min(
+      confidence,
+      1
+    );
+
+  return {
+    confidence,
+
+    interpretation:
+      buildInterpretation(
+        destination,
+        tripTypes,
+        durationDays
+      ),
+
+    trip_profile: {
+      destination_or_experience:
+        destination ||
+        "Viaje o experiencia",
+
+      trip_type:
+        [
+          ...new Set(
+            tripTypes
+          )
+        ],
+
+      duration:
+        durationDays
+          ? `${durationDays} días`
+          : "",
+
+      season_or_dates:
+        seasonOrDates || "",
+
+      travellers,
+
+      activity_level:
+        "desconocido",
+
+      accommodation,
+
+      luggage_constraints:
+        luggageConstraints,
+
+      special_contexts:
+        specialContexts
+    },
+
+    verification_needed:
+      verificationNeeded,
+
+    questions,
+
+    invalid: false
+  };
+}
+
+
+// ======================================================
+// FILTRO FINAL DE PREGUNTAS
 // ======================================================
 
 function filterQuestions(
@@ -126,55 +559,204 @@ function filterQuestions(
   const tripText =
     normalize(trip);
 
-  return questions.filter(question => {
-    const text =
-      normalize(
-        `${question.question || ""} ${question.reason || ""}`
-      );
-
-    // Preguntas de experiencia o preparación física
-    if (
-      /experiencia previa|preparacion fisica|preparación física|condicion fisica|condición física/.test(
-        text
-      )
-    ) {
-      return false;
-    }
-
-    // Actividades hipotéticas no mencionadas
-    if (
-      /alguna actividad especial|otras actividades|actividad adicional|ciclismo|visitas a lugares especificos|visitas a lugares específicos/.test(
-        text
-      )
-    ) {
-      const activityWasMentioned =
-        /ciclismo|bicicleta|bici|actividad especial|actividad adicional/.test(
-          tripText
+  return questions.filter(
+    question => {
+      const text =
+        normalize(
+          `${question.question || ""} ${question.reason || ""}`
         );
 
-      if (!activityWasMentioned) {
+      if (
+        /experiencia previa|preparacion fisica|condicion fisica/.test(
+          text
+        )
+      ) {
         return false;
       }
-    }
 
-    // Lavandería solo merece pregunta si realmente puede cambiar equipaje
+      if (
+        /alguna actividad especial|otras actividades|actividad adicional|ciclismo/.test(
+          text
+        )
+      ) {
+        const mentioned =
+          /ciclismo|bicicleta|bici/.test(
+            tripText
+          );
+
+        return mentioned;
+      }
+
+      if (
+        /lavanderia|lavar ropa/.test(
+          text
+        )
+      ) {
+        const relevant =
+          /8 dias|9 dias|10 dias|11 dias|12 dias|13 dias|14 dias|15 dias|equipaje de cabina|solo cabina|mochila propia|camino de santiago/.test(
+            tripText
+          );
+
+        return relevant;
+      }
+
+      return true;
+    }
+  );
+}
+
+
+// ======================================================
+// UTILIDADES
+// ======================================================
+
+function detectDurationDays(
+  text
+) {
+  const dayMatch =
+    text.match(
+      /(\d+)\s*dias?/
+    );
+
+  if (dayMatch) {
+    return Number(
+      dayMatch[1]
+    );
+  }
+
+  const weekMatch =
+    text.match(
+      /(\d+)\s*semanas?/
+    );
+
+  if (weekMatch) {
+    return Number(
+      weekMatch[1]
+    ) * 7;
+  }
+
+  if (
+    text.includes(
+      "fin de semana"
+    )
+  ) {
+    return 2;
+  }
+
+  return null;
+}
+
+
+function detectChildAges(
+  text
+) {
+  const ages = [];
+
+  const regex =
+    /(\d{1,2})\s*anos/g;
+
+  let match;
+
+  while (
+    (
+      match =
+        regex.exec(text)
+    ) !== null
+  ) {
+    const age =
+      Number(match[1]);
+
     if (
-      /lavanderia|lavandería|lavar ropa/.test(
-        text
-      )
+      age >= 0 &&
+      age <= 17
     ) {
-      const longOrLimitedTrip =
-        /8 dias|8 días|9 dias|9 días|10 dias|10 días|11 dias|11 días|12 dias|12 días|13 dias|13 días|14 dias|14 días|15 dias|15 días|semana y media|dos semanas|equipaje de cabina|solo cabina|mochila propia|camino de santiago|senderismo varios dias|senderismo varios días/.test(
-          tripText
-        );
-
-      if (!longOrLimitedTrip) {
-        return false;
-      }
+      ages.push(age);
     }
+  }
 
-    return true;
-  });
+  return [
+    ...new Set(
+      ages
+    )
+  ];
+}
+
+
+function detectSeason(text) {
+  const months = [
+    "enero",
+    "febrero",
+    "marzo",
+    "abril",
+    "mayo",
+    "junio",
+    "julio",
+    "agosto",
+    "septiembre",
+    "octubre",
+    "noviembre",
+    "diciembre"
+  ];
+
+  for (
+    const month
+    of months
+  ) {
+    if (
+      text.includes(month)
+    ) {
+      return month;
+    }
+  }
+
+  if (
+    text.includes("verano")
+  ) {
+    return "verano";
+  }
+
+  if (
+    text.includes("invierno")
+  ) {
+    return "invierno";
+  }
+
+  return "";
+}
+
+
+function buildInterpretation(
+  destination,
+  tripTypes,
+  durationDays
+) {
+  const parts = [];
+
+  if (destination) {
+    parts.push(destination);
+  }
+
+  if (
+    durationDays
+  ) {
+    parts.push(
+      `${durationDays} días`
+    );
+  }
+
+  if (
+    !parts.length &&
+    tripTypes.length
+  ) {
+    parts.push(
+      tripTypes.join(", ")
+    );
+  }
+
+  return (
+    parts.join(" · ") ||
+    "Viaje interpretado"
+  );
 }
 
 
