@@ -166,6 +166,14 @@ function localAnalyze(trip) {
 
   let confidence = 0.35;
 
+  const genericDestination =
+    detectGenericDestination(trip);
+
+  if (genericDestination) {
+    destination = genericDestination;
+    confidence += 0.25;
+  }
+  
   // ======================================================
   // DESTINOS / EXPERIENCIAS MUY RECONOCIBLES
   // ======================================================
@@ -617,6 +625,52 @@ function filterQuestions(
 // ======================================================
 // UTILIDADES
 // ======================================================
+
+function detectGenericDestination(
+  originalTrip
+) {
+  const text =
+    String(originalTrip || "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const months =
+    "enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre";
+
+  const patterns = [
+    new RegExp(
+      `(?:me voy|nos vamos|voy|vamos|viajo|viajamos|iremos)\\s+(?:\\d+\\s+d[ií]as?\\s+)?a\\s+(.+?)(?=\\s+en\\s+(?:${months})\\b|\\s+durante\\b|\\s+con\\b|\\s+y\\s+haremos\\b|[,.]|$)`,
+      "i"
+    ),
+
+    new RegExp(
+      `(?:viaje|viajar|viajaremos)\\s+a\\s+(.+?)(?=\\s+en\\s+(?:${months})\\b|\\s+durante\\b|\\s+con\\b|[,.]|$)`,
+      "i"
+    )
+  ];
+
+  for (
+    const pattern
+    of patterns
+  ) {
+    const match =
+      text.match(pattern);
+
+    if (
+      match &&
+      match[1]
+    ) {
+      return match[1]
+        .trim()
+        .replace(
+          /\s+(?:durante|con)$/i,
+          ""
+        );
+    }
+  }
+
+  return "";
+}
 
 function detectDurationDays(
   text
