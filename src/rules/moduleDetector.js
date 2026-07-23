@@ -8,7 +8,11 @@ const originalTripText = normalize(trip);
 
 const isPlanazoImport =
   analysis?.intelligence?.source === "elplanazo_import";
-  const activeModules = ["viaje_base"];
+  const activeModules = [
+  "viaje_base"
+];
+
+const activityModules = [];
 
   const flags = {
     hasChildren: false,
@@ -239,6 +243,108 @@ const isPlanazoImport =
     );
   }
 
+  // ====================================================
+  // ACTIVIDADES PUNTUALES
+  // ====================================================
+
+  // Caminatas o excursiones concretas.
+  // NO convierten el viaje entero en senderismo de varios días.
+  if (
+    matches(text, [
+      "gran muralla",
+      "caminata",
+      "excursion a pie",
+      "excursión a pie",
+      "ruta corta",
+      "mirador con caminata"
+    ]) &&
+    !isHiking &&
+    !isCamino
+  ) {
+    activityModules.push(
+      "excursion_caminata"
+    );
+  }
+
+  // Bicicleta puntual.
+  if (
+    matches(text, [
+      "recorrido en bicicleta",
+      "paseo en bicicleta",
+      "alquiler de bicicleta",
+      "ruta en bici",
+      "bicicleta opcional"
+    ])
+  ) {
+    activityModules.push(
+      "bicicleta_puntual"
+    );
+  }
+
+  // Barco o paseo acuático puntual.
+  if (
+    matches(text, [
+      "paseo en barco",
+      "crucero al atardecer",
+      "excursion en barco",
+      "excursión en barco",
+      "ferry",
+      "catamaran",
+      "catamarán"
+    ])
+  ) {
+    activityModules.push(
+      "barco_puntual"
+    );
+  }
+
+  // Actividades con agua/humedad sin ser un viaje de playa.
+  if (
+    matches(text, [
+      "cataratas",
+      "rafting",
+      "kayak",
+      "canoa",
+      "parque acuatico",
+      "parque acuático"
+    ])
+  ) {
+    activityModules.push(
+      "actividad_agua"
+    );
+  }
+
+  // Safari/fauna como actividad.
+  if (
+    matches(text, [
+      "safari",
+      "game drive",
+      "observacion de fauna",
+      "observación de fauna",
+      "reserva natural",
+      "parque nacional"
+    ])
+  ) {
+    activityModules.push(
+      "safari_fauna"
+    );
+  }
+
+  // Cena o evento algo más formal.
+  if (
+    matches(text, [
+      "cena formal",
+      "cena de gala",
+      "evento formal",
+      "restaurante elegante"
+    ])
+  ) {
+    activityModules.push(
+      "evento_formal"
+    );
+  }
+
+  
   // ====================================================
   // NIÑOS / BEBÉS
   // ====================================================
@@ -472,18 +578,19 @@ const isPlanazoImport =
   }
 
   return {
-    activeModules: [
-      ...new Set(activeModules)
-    ],
+  activeModules: [
+    ...new Set(activeModules)
+  ],
 
-    durationDays,
+  activityModules: [
+    ...new Set(activityModules)
+  ],
 
-    travellers,
-
-    childAges,
-
-    flags
-  };
+  durationDays,
+  travellers,
+  childAges,
+  flags
+};
 }
 
 
