@@ -9,6 +9,14 @@ export async function handleAnalyze(body, env) {
   }
 
   // ======================================================
+  // VIAJE IMPORTADO DESDE EL PLANAZO
+  // ======================================================
+
+  if (isPlanazoImport(trip)) {
+    return analyzePlanazoImport(trip);
+  }
+  
+  // ======================================================
   // 1. ANÁLISIS LOCAL GRATIS
   // ======================================================
 
@@ -759,6 +767,372 @@ function buildInterpretation(
   );
 }
 
+// ======================================================
+// IMPORTACIONES DESDE EL PLANAZO
+// ======================================================
+
+function isPlanazoImport(trip) {
+  const text = normalize(trip);
+
+  return (
+    text.includes("viaje planificado") &&
+    text.includes("destino") &&
+    (
+      text.includes("itinerario previsto") ||
+      text.includes("actividades previstas")
+    )
+  );
+}
+
+
+function analyzePlanazoImport(trip) {
+  const original = String(trip || "");
+  const text = normalize(original);
+
+  const destination =
+    extractLineValue(
+      original,
+      "Destino"
+    ) || "Viaje importado desde El Planazo";
+
+  const durationDays =
+    detectDurationDays(text);
+
+  const seasonOrDates =
+    extractLineValue(
+      original,
+      "Mes aproximado"
+    ) ||
+    detectSeason(text);
+
+  const travellers =
+    extractLineValue(
+      original,
+      "Viajeros"
+    ) ||
+    "desconocido";
+
+  const tripTypes = [];
+  const specialContexts = [];
+
+  // ------------------------------------------------------
+  // DETECTAR CONTEXTOS A PARTIR DEL ITINERARIO COMPLETO
+  // ------------------------------------------------------
+
+  if (
+    /disneyland|portaventura|parque tematico/.test(
+      text
+    )
+  ) {
+    tripTypes.push(
+      "parque temático"
+    );
+  }
+
+  if (
+    /senderismo|trekking|caminata|gran muralla/.test(
+      text
+    )
+  ) {
+    tripTypes.push(
+      "senderismo o caminatas"
+    );
+  }
+
+  if (
+    /safari|fauna|parque nacional/.test(
+      text
+    )
+  ) {
+    tripTypes.push(
+      "safari"
+    );
+
+    specialContexts.push(
+      "fauna y actividades al aire libre"
+    );
+  }
+
+  if (
+    /playa|costa|piscina|bano/.test(
+      text
+    )
+  ) {
+    tripTypes.push(
+      "playa"
+    );
+  }
+
+  if (
+    /crucero|barco|zambeze/.test(
+      text
+    )
+  ) {
+    tripTypes.push(
+      "barco o crucero"
+    );
+  }
+
+  if (
+    /bicicleta|bici/.test(
+      text
+    )
+  ) {
+    specialContexts.push(
+      "actividad en bicicleta"
+    );
+  }
+
+  if (
+    /tren|tren bala|interrail/.test(
+      text
+    )
+  ) {
+    specialContexts.push(
+      "desplazamientos en tren"
+    );
+  }
+
+  if (
+    /museo|palacio|templo|cultura|ciudad prohibida|terracota/.test(
+      text
+    )
+  ) {
+    tripTypes.push(
+      "turismo urbano y cultural"
+    );
+  }
+
+  if (
+    /varias ciudades|beijing|pekin|xi an|tokio|kioto|osaka/.test(
+      text
+    )
+  ) {
+    specialContexts.push(
+      "viaje urbano multidestino"
+    );
+  }
+
+  const transport =
+    extractLineValue(
+      original,
+      "Transportes"
+    ) ||
+    extractLineValue(
+      original,
+      "Transporte"
+    );
+
+  if (transport) {
+    specialContexts.push(
+      `Transportes previstos: ${transport}`
+    );
+  }
+
+  const interests =
+    extractLineValue(
+      original,
+      "Tipo de viaje e intereses"
+    );
+
+  if (interests) {
+    specialContexts.push(
+      `Intereses: ${interests}`
+    );
+  }
+
+  // ------------------------------------------------------
+  // VERIFICACIONES
+  // ------------------------------------------------------
+
+  const verificationNeeded = [];
+
+  if (seasonOrDates) {
+    verificationNeeded.push(
+      "Consultar la previsión meteorológica concreta pocos días antes de salir."
+    );
+  }
+
+  if (
+    /avion|vuelo|aeropuerto/.test(
+      text
+    )
+  ) {
+    verificationNeeded.push(
+      "Comprobar documentación, requisitos de entrada y condiciones de equipaje vigentes en fuentes oficiales y con la compañía aérea."
+    );
+  }
+
+  // ------------------------------------------------------
+  // RESULTADO
+  // ------------------------------------------------------
+
+  return {
+    valid: true,
+
+    interpretation:
+      durationDays
+        ? `${destination} · ${durationDays} días`
+        : destination,
+
+    trip_profile: {
+      destination_or_experience:
+        destination,
+
+      trip_type:
+        [
+          ...new Set(
+            tripTypes
+          )
+        ],
+
+      duration:
+        durationDays
+          ? `${durationDays} días`
+          : "",
+
+      season_or_dates:
+        seasonOrDates || "",
+
+      travellers,
+
+      activity_level:
+        /aprovechar al maximo|ritmo del viaje aprovechar/.test(
+          text
+        )
+          ? "alto"
+          : "variable",
+
+      accommodation:
+        detectAccommodationFromPlan(
+          text
+        ),
+
+      luggage_constraints:
+        detectLuggageFromPlan(
+          text
+        ),
+
+      special_contexts:
+        [
+          ...new Set(
+            specialContexts
+          )
+        ]
+    },
+
+    general_warnings: [],
+
+    verification_needed:
+      verificationNeeded,
+
+    // El Planazo ya nos ha dado suficiente información.
+    // No gastamos IA ni hacemos preguntas redundantes.
+    questions: [],
+
+    intelligence: {
+      source:
+        "elplanazo_import",
+
+      confidence: 1,
+
+      ai_used: false
+    }
+  };
+}
+
+
+function extractLineValue(
+  text,
+  label
+) {
+  const escapedLabel =
+    label.replace(
+      /[.*+?^${}()|[\]\\]/g,
+      "\\$&"
+    );
+
+  const regex =
+    new RegExp(
+      `(?:^|\\n)${escapedLabel}:\\s*([^\\n]+)`,
+      "i"
+    );
+
+  const match =
+    String(text || "").match(
+      regex
+    );
+
+  return match
+    ? match[1].trim()
+    : "";
+}
+
+
+function detectAccommodationFromPlan(
+  text
+) {
+  if (
+    /albergue/.test(text)
+  ) {
+    return "albergue";
+  }
+
+  if (
+    /camping|acampada/.test(text)
+  ) {
+    return "camping";
+  }
+
+  if (
+    /apartamento|apartahotel/.test(
+      text
+    )
+  ) {
+    return "apartamento";
+  }
+
+  if (
+    /hotel|lodge|resort/.test(
+      text
+    )
+  ) {
+    return "hotel o alojamiento equivalente";
+  }
+
+  return "desconocido";
+}
+
+
+function detectLuggageFromPlan(
+  text
+) {
+  if (
+    /equipaje de cabina|solo cabina|maleta de mano/.test(
+      text
+    )
+  ) {
+    return "equipaje de cabina";
+  }
+
+  if (
+    /maleta facturada|equipaje facturado/.test(
+      text
+    )
+  ) {
+    return "equipaje facturado";
+  }
+
+  if (
+    /mochila propia|nuestras mochilas/.test(
+      text
+    )
+  ) {
+    return "mochila propia";
+  }
+
+  return "desconocido";
+}
 
 function normalize(text) {
   return String(text || "")
