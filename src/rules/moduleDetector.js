@@ -4,7 +4,10 @@ export function detectModules(
   answers = {}
 ) {
   const text = buildText(trip, analysis, answers);
+const originalTripText = normalize(trip);
 
+const isPlanazoImport =
+  analysis?.intelligence?.source === "elplanazo_import";
   const activeModules = ["viaje_base"];
 
   const flags = {
@@ -132,15 +135,24 @@ export function detectModules(
       "peregrino"
     ]);
 
-  const isHiking =
-    matches(text, [
-      "senderismo",
-      "trekking",
-      "ruta de varios dias",
-      "ruta de varios días",
-      "caminata de varios dias",
-      "caminata de varios días"
-    ]);
+ const isHiking =
+  isPlanazoImport
+    ? matches(originalTripText, [
+        "senderismo",
+        "trekking",
+        "ruta de varios dias",
+        "ruta de varios días",
+        "caminata de varios dias",
+        "caminata de varios días"
+      ])
+    : matches(text, [
+        "senderismo",
+        "trekking",
+        "ruta de varios dias",
+        "ruta de varios días",
+        "caminata de varios dias",
+        "caminata de varios días"
+      ]);
 
   if (isCamino) {
     activeModules.push(
@@ -189,19 +201,26 @@ export function detectModules(
   }
 
   if (
-    matches(text, [
-      "playa",
-      "costa",
-      "piscina",
-      "baño",
-      "banarse",
-      "bañarse"
-    ])
-  ) {
-    activeModules.push(
-      "playa"
-    );
-  }
+  matchesWholeWords(text, [
+    "playa",
+    "playas",
+    "piscina",
+    "piscinas",
+    "baño",
+    "baños",
+    "bañarse"
+  ]) ||
+  matches(text, [
+    "dia de playa",
+    "día de playa",
+    "zona de baño",
+    "zona de baños"
+  ])
+) {
+  activeModules.push(
+    "playa"
+  );
+}
 
   if (
     matches(text, [
@@ -620,6 +639,29 @@ function detectChildAges(
   ];
 }
 
+function matchesWholeWords(
+  text,
+  values
+) {
+  return values.some(value => {
+    const normalizedValue =
+      normalize(value);
+
+    const escaped =
+      normalizedValue.replace(
+        /[.*+?^${}()|[\]\\]/g,
+        "\\$&"
+      );
+
+    const regex =
+      new RegExp(
+        `(^|\\s)${escaped}(?=\\s|$)`,
+        "i"
+      );
+
+    return regex.test(text);
+  });
+}
 
 function normalize(text) {
   return String(text || "")
