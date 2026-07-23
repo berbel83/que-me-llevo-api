@@ -261,6 +261,163 @@ function localAnalyze(trip) {
     confidence += 0.15;
   }
 
+  // ======================================================
+  // CONTEXTOS GENERALES DEL VIAJE
+  // ======================================================
+
+  if (
+    /crucero|fiordos/.test(text)
+  ) {
+    tripTypes.push(
+      "crucero"
+    );
+
+    specialContexts.push(
+      "viaje con navegación o barco"
+    );
+
+    confidence += 0.15;
+  }
+
+  if (
+    /excursion en barco|excursiones en barco|paseo en barco|catamaran|ferry/.test(
+      text
+    )
+  ) {
+    specialContexts.push(
+      "excursión puntual en barco"
+    );
+
+    confidence += 0.1;
+  }
+
+  if (
+    /caminata|excursion a pie|mirador/.test(
+      text
+    ) &&
+    !/senderismo de varios dias|trekking de varios dias/.test(
+      text
+    )
+  ) {
+    specialContexts.push(
+      "excursión puntual con caminata"
+    );
+
+    confidence += 0.1;
+  }
+
+  if (
+    /bicicleta|ruta en bici|paseo en bici/.test(
+      text
+    )
+  ) {
+    specialContexts.push(
+      "actividad puntual en bicicleta"
+    );
+
+    confidence += 0.05;
+  }
+
+  if (
+    /safari|observacion de fauna|reserva natural|parque nacional/.test(
+      text
+    )
+  ) {
+    specialContexts.push(
+      "actividad de safari o fauna"
+    );
+
+    confidence += 0.1;
+  }
+
+  if (
+    /cataratas|rafting|kayak|canoa/.test(
+      text
+    )
+  ) {
+    specialContexts.push(
+      "actividad con agua o humedad"
+    );
+
+    confidence += 0.1;
+  }
+
+  if (
+    /varias ciudades|entre ciudades|cambio de ciudad|cambios de ciudad|ruta por varias ciudades/.test(
+      text
+    )
+  ) {
+    specialContexts.push(
+      "viaje multidestino"
+    );
+
+    confidence += 0.1;
+  }
+
+  // ======================================================
+  // TRANSPORTES
+  // ======================================================
+
+  if (
+    /avion|vuelo|aeropuerto/.test(
+      text
+    )
+  ) {
+    specialContexts.push(
+      "viaje en avión"
+    );
+
+    confidence += 0.05;
+  }
+
+  if (
+    /tren|ferrocarril|interrail/.test(
+      text
+    )
+  ) {
+    specialContexts.push(
+      "desplazamientos en tren"
+    );
+
+    confidence += 0.05;
+  }
+
+  if (
+    /coche de alquiler|alquiler de coche/.test(
+      text
+    )
+  ) {
+    specialContexts.push(
+      "coche de alquiler"
+    );
+
+    confidence += 0.05;
+  }
+
+  if (
+    /coche propio/.test(
+      text
+    )
+  ) {
+    specialContexts.push(
+      "coche propio"
+    );
+
+    confidence += 0.05;
+  }
+
+  if (
+    /transporte publico|metro|autobus|bus urbano/.test(
+      text
+    )
+  ) {
+    specialContexts.push(
+      "transporte público"
+    );
+
+    confidence += 0.05;
+  }
+  
   if (
     /playa|costa/.test(text)
   ) {
