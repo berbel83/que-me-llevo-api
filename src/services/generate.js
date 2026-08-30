@@ -121,6 +121,12 @@ activity_modules:
       duration_days:
         context.durationDays,
 
+      travellers:
+        context.travellers,
+
+      child_ages:
+        context.childAges,
+
       flags:
         context.flags
     }
