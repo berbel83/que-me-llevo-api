@@ -48,6 +48,15 @@ const activityModules = [];
   // ====================================================
 
   if (
+    durationDays >= 1 &&
+    durationDays <= 3
+  ) {
+    activeModules.push(
+      "duracion_1_3_dias"
+    );
+  }
+
+  if (
     durationDays >= 4 &&
     durationDays <= 7
   ) {
