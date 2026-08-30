@@ -58,4 +58,16 @@ assert.ok(
     .every(item => item.name.endsWith("por persona"))
 );
 
+const allItemIds = result.categories.flatMap(
+  category => category.items.map(item => item.id)
+);
+
+assert.ok(allItemIds.includes("telefono_movil"));
+assert.ok(allItemIds.includes("cargador_movil"));
+assert.ok(allItemIds.includes("cepillo_dientes"));
+assert.ok(allItemIds.includes("pasta_dientes"));
+assert.ok(allItemIds.includes("desodorante"));
+assert.ok(!allItemIds.includes("movil_cargador"));
+assert.ok(!allItemIds.includes("neceser_base"));
+
 console.log("Regression tests passed");
