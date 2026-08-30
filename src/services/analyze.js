@@ -24,7 +24,7 @@ export async function handleAnalyze(body, env) {
 
   // Si entendemos suficientemente bien el viaje,
   // NO llamamos a Groq.
-  if (local.confidence >= 0.8) {
+  if (local.confidence >= 0.79) {
     return {
       valid: true,
       interpretation: local.interpretation,
