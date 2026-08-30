@@ -88,7 +88,7 @@ const MODULES = {
         "Gel y champú en formato adecuado",
         "recommended",
         "Puedes llevar formatos compartidos para toda la familia o comprobar si los aporta el alojamiento.",
-        false
+        true
       ),
       item(
         "pequeno_botiquin",
@@ -104,7 +104,7 @@ const MODULES = {
         "Mochila o bolsa pequeña para las salidas",
         "recommended",
         "Permite llevar agua, documentación y lo necesario para los niños sin cargar el equipaje principal.",
-        false
+        true
       )
     ]
   },
