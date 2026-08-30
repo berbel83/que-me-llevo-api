@@ -19,6 +19,13 @@ export function applyQuantityRules(
     const children =
       context.childAges || [];
 
+    const travellerSuffix =
+      context.travellers?.adults ||
+      context.travellers?.children ||
+      context.flags.hasChildren
+        ? " por persona"
+        : "";
+
     // ====================================================
     // CAMISETAS
     // ====================================================
@@ -41,7 +48,7 @@ export function applyQuantityRules(
 
   if (qty) {
     copy.name =
-      `${qty} camisetas`;
+      `${qty} camisetas${travellerSuffix}`;
   }
 
   copy.why =
@@ -76,7 +83,7 @@ export function applyQuantityRules(
       }
 
       copy.name =
-        `${qty} pantalones o partes de abajo`;
+        `${qty} pantalones o partes de abajo${travellerSuffix}`;
 
       copy.why =
         ownBackpack
@@ -109,7 +116,7 @@ export function applyQuantityRules(
 
   if (qty) {
     copy.name =
-      `${qty} mudas de ropa interior`;
+      `${qty} mudas de ropa interior${travellerSuffix}`;
   }
 
   copy.why =
@@ -143,7 +150,7 @@ export function applyQuantityRules(
 
   if (qty) {
     copy.name =
-      `${qty} pares de calcetines`;
+      `${qty} pares de calcetines${travellerSuffix}`;
   }
 
   copy.why =
