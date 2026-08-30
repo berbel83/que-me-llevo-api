@@ -815,6 +815,25 @@ function detectTravellers(
     };
   }
 
+  const adultsMatch = text.match(
+    /(\d+)\s*(?:adultos?|personas?\s+adultas?)/
+  );
+
+  const childrenMatch = text.match(
+    /(\d+)\s*(?:ninos?|hijos?|hijas?)/
+  );
+
+  if (adultsMatch || childrenMatch) {
+    return {
+      adults: adultsMatch
+        ? Number(adultsMatch[1])
+        : null,
+      children: childrenMatch
+        ? Number(childrenMatch[1])
+        : null
+    };
+  }
+
   return {
     adults: null,
     children: null
@@ -827,25 +846,19 @@ function detectChildAges(
 ) {
   const ages = [];
 
-  const regex =
-    /(\d{1,2})\s*a[nñ]os/g;
+  const ageGroups = text.matchAll(
+    /(?:de\s+)?((?:\d{1,2}\s*(?:,|y|e)\s*)*\d{1,2})\s*a[nñ]os/g
+  );
 
-  let match;
+  for (const group of ageGroups) {
+    const values = group[1].match(/\d{1,2}/g) || [];
 
-  while (
-    (
-      match =
-        regex.exec(text)
-    ) !== null
-  ) {
-    const age =
-      Number(match[1]);
+    for (const value of values) {
+      const age = Number(value);
 
-    if (
-      age >= 0 &&
-      age <= 17
-    ) {
-      ages.push(age);
+      if (age >= 0 && age <= 17) {
+        ages.push(age);
+      }
     }
   }
 
