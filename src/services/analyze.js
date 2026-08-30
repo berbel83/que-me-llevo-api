@@ -871,25 +871,19 @@ function detectChildAges(
 ) {
   const ages = [];
 
-  const regex =
-    /(\d{1,2})\s*anos/g;
+  const ageGroups = text.matchAll(
+    /(?:de\s+)?((?:\d{1,2}\s*(?:,|y|e)\s*)*\d{1,2})\s*anos/g
+  );
 
-  let match;
+  for (const group of ageGroups) {
+    const values = group[1].match(/\d{1,2}/g) || [];
 
-  while (
-    (
-      match =
-        regex.exec(text)
-    ) !== null
-  ) {
-    const age =
-      Number(match[1]);
+    for (const value of values) {
+      const age = Number(value);
 
-    if (
-      age >= 0 &&
-      age <= 17
-    ) {
-      ages.push(age);
+      if (age >= 0 && age <= 17) {
+        ages.push(age);
+      }
     }
   }
 
