@@ -18,19 +18,43 @@ const MODULES = {
         false
       ),
       item(
-        "movil_cargador",
+        "telefono_movil",
         "Electrónica",
-        "Teléfono móvil y cargador",
+        "Teléfono móvil",
         "recommended",
         "Útil para comunicación, reservas, navegación e información del viaje.",
         false
       ),
       item(
-        "neceser_base",
-        "Higiene",
-        "Neceser básico de higiene personal",
+        "cargador_movil",
+        "Electrónica",
+        "Cargador del teléfono móvil",
         "essential",
-        "Agrupa los productos personales imprescindibles sin cargar formatos innecesariamente grandes.",
+        "Permite mantener operativo el teléfono durante todo el viaje.",
+        false
+      ),
+      item(
+        "cepillo_dientes",
+        "Higiene",
+        "Cepillo de dientes",
+        "essential",
+        "Artículo básico de higiene diaria.",
+        false
+      ),
+      item(
+        "pasta_dientes",
+        "Higiene",
+        "Pasta de dientes",
+        "essential",
+        "Lleva un formato adecuado a la duración y a las restricciones de equipaje.",
+        false
+      ),
+      item(
+        "desodorante",
+        "Higiene",
+        "Desodorante",
+        "recommended",
+        "Útil para el aseo diario durante el viaje.",
         false
       )
     ]
