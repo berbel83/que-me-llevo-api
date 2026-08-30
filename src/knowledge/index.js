@@ -57,6 +57,127 @@ const MODULES = {
         "Útil para el aseo diario durante el viaje.",
         false
       )
+,
+      item(
+        "cartera_pago",
+        "Documentación",
+        "Cartera, tarjetas y medio de pago",
+        "essential",
+        "Conviene comprobarlos antes de salir y llevar alguna alternativa de pago.",
+        false
+      ),
+      item(
+        "reservas_billetes",
+        "Documentación",
+        "Reservas, entradas y billetes necesarios",
+        "essential",
+        "Llévalos accesibles en el móvil o descargados para consultarlos sin conexión.",
+        false
+      ),
+      item(
+        "peine_cepillo",
+        "Higiene",
+        "Peine o cepillo para el pelo",
+        "recommended",
+        "Artículo habitual de aseo personal.",
+        false
+      ),
+      item(
+        "gel_champu",
+        "Higiene",
+        "Gel y champú en formato adecuado",
+        "recommended",
+        "Puedes llevar formatos compartidos para toda la familia o comprobar si los aporta el alojamiento.",
+        false
+      ),
+      item(
+        "pequeno_botiquin",
+        "Salud",
+        "Pequeño botiquín familiar",
+        "recommended",
+        "Útil para rozaduras y pequeños imprevistos durante el viaje.",
+        false
+      ),
+      item(
+        "mochila_dia_base",
+        "Durante el día",
+        "Mochila o bolsa pequeña para las salidas",
+        "recommended",
+        "Permite llevar agua, documentación y lo necesario para los niños sin cargar el equipaje principal.",
+        false
+      )
+    ]
+  },
+
+  duracion_1_3_dias: {
+    items: [
+      item(
+        "camisetas_base",
+        "Ropa",
+        "Camisetas",
+        "essential",
+        "Cantidad ajustada a la duración del viaje.",
+        false
+      ),
+      item(
+        "pantalones_base",
+        "Ropa",
+        "Pantalones o partes de abajo",
+        "essential",
+        "Una pequeña rotación permite reutilizar prendas sin llevar de más.",
+        false
+      ),
+      item(
+        "ropa_interior_base",
+        "Ropa",
+        "Ropa interior",
+        "essential",
+        "Cantidad calculada según los días con una muda de margen.",
+        false
+      ),
+      item(
+        "calcetines_base",
+        "Ropa",
+        "Calcetines",
+        "essential",
+        "Cantidad ajustada a la duración y la actividad.",
+        false
+      ),
+      item(
+        "pijama",
+        "Ropa",
+        "Pijama o ropa cómoda para dormir",
+        "recommended",
+        "Útil para descansar fuera de casa.",
+        false
+      ),
+      item(
+        "calzado_comodo",
+        "Calzado",
+        "Calzado cómodo para caminar",
+        "essential",
+        "En una escapada urbana es habitual pasar bastantes horas caminando.",
+        false
+      ),
+      item(
+        "capa_segun_prevision",
+        "Ropa y clima",
+        "Chaqueta o capa adecuada a la previsión",
+        "recommended",
+        "Permite adaptar el equipaje a la temperatura y posibles cambios de tiempo.",
+        false
+      ),
+      item(
+        "bolsa_ropa_sucia",
+        "Organización",
+        "Bolsa para separar la ropa sucia",
+        "optional",
+        "Mantiene separado lo usado del resto del equipaje.",
+        false
+      )
+    ],
+    verifications: [
+      "Consultar la previsión meteorológica concreta pocos días antes de salir."
     ]
   },
 
