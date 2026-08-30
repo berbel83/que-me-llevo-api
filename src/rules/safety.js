@@ -360,6 +360,12 @@ function semanticallySimilar(a, b) {
   }
 
   if (
+    isComplementaryAccessory(na, nb)
+  ) {
+    return false;
+  }
+
+  if (
     na.includes(nb) ||
     nb.includes(na)
   ) {
@@ -409,6 +415,20 @@ function semanticallySimilar(a, b) {
   }
 
   return matches >= 2;
+}
+
+
+function isComplementaryAccessory(a, b) {
+  const accessoryWords = [
+    "cargador",
+    "cable",
+    "adaptador",
+    "funda"
+  ];
+
+  return accessoryWords.some(word =>
+    a.includes(word) !== b.includes(word)
+  );
 }
 
 
