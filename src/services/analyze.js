@@ -1269,7 +1269,9 @@ function extractLineValue(
     );
 
   return match
-    ? match[1].trim()
+    ? match[1]
+        .trim()
+        .replace(/[.,;:]+$/, "")
     : "";
 }
 
