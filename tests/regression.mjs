@@ -36,6 +36,7 @@ assert.ok(beach.result.intelligence.active_modules.includes("playa"));
 assert.ok(beach.ids.includes("proteccion_solar_playa"));
 assert.ok(beach.ids.includes("toalla_playa"));
 assert.ok(beach.ids.includes("chanclas_playa"));
+assert.ok(beach.result.discoveries.some(item => /arena|impermeable/.test(item.name.toLowerCase())));
 
 const camping = await evaluate("Voy 4 días de camping en julio con mis hijos de 5 y 7 años");
 assert.ok(camping.ids.includes("tienda_camping"));
@@ -57,6 +58,7 @@ assert.ok(work.result.intelligence.active_modules.includes("viaje_trabajo"));
 assert.ok(work.result.intelligence.active_modules.includes("tren"));
 assert.ok(work.ids.includes("portatil_trabajo"));
 assert.ok(work.ids.includes("ropa_formal_trabajo"));
+assert.ok(work.result.discoveries.some(item => /cargador|organizador/.test(item.name.toLowerCase())));
 
 const china = await evaluate("Voy 10 días a China en diciembre: Pekín, Xi’an y Shanghái, en tren y avión, con mi mujer");
 assert.ok(china.result.intelligence.active_modules.includes("viaje_internacional"));
