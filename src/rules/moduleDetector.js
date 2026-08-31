@@ -26,7 +26,10 @@ const activityModules = [];
     camping: false,
     plane: false,
     car: false,
-    train: false
+    train: false,
+    pet: false,
+    accessibility: false,
+    medicalNeeds: false
   };
 
   const durationDays = detectDurationDays(
@@ -94,6 +97,53 @@ const activityModules = [];
   ) {
     flags.hotel = true;
     activeModules.push("hotel");
+  }
+
+  if (matches(text, ["crucero", "barco de crucero", "naviera", "camarote"])) {
+    activeModules.push("crucero");
+  }
+
+  if (matches(text, ["autocaravana", "caravana", "camper", "furgoneta camper"])){ 
+    activeModules.push("autocaravana_caravana");
+  }
+
+  if (matches(text, ["road trip", "ruta en coche", "viaje por carretera", "recorreremos en coche", "varias etapas en coche"])) {
+    activeModules.push("road_trip");
+  }
+
+  if (matches(text, ["con mi perro", "con mi perra", "con nuestro perro", "con nuestra perra", "con mascota", "con mascotas", "viajo con gato", "viajamos con gato"])) {
+    flags.pet = true;
+    activeModules.push("mascotas");
+  }
+
+  if (matches(text, ["vuelo largo", "vuelo intercontinental", "vuelo de larga distancia", "muchas horas de vuelo", "escala larga"])) {
+    activeModules.push("vuelo_largo");
+  }
+
+  if (matches(text, ["clima tropical", "selva", "caribe", "punta cana", "costa rica", "bali", "zanzibar", "zanzíbar", "muchos mosquitos", "zona de mosquitos"])) {
+    activeModules.push("tropical_mosquitos");
+  }
+
+  if (matches(text, ["boda", "comunion", "comunión", "bautizo", "ceremonia", "evento elegante"])) {
+    activeModules.push("boda_evento");
+  }
+
+  if (matches(text, ["festival", "festival de musica", "festival de música", "conciertos varios dias", "conciertos varios días"])) {
+    activeModules.push("festival");
+  }
+
+  if (matches(text, ["cicloturismo", "viaje en bicicleta", "ruta de varios dias en bici", "ruta de varios días en bici", "camino en bicicleta", "etapas en bicicleta"])) {
+    activeModules.push("cicloturismo");
+  }
+
+  if (matches(text, ["silla de ruedas", "movilidad reducida", "necesidades de accesibilidad", "andador", "ayuda tecnica", "ayuda técnica"])) {
+    flags.accessibility = true;
+    activeModules.push("accesibilidad");
+  }
+
+  if (matches(text, ["diabetes", "insulina", "cpap", "apnea", "medicacion refrigerada", "medicación refrigerada", "dispositivo medico", "dispositivo médico", "tratamiento medico", "tratamiento médico"])) {
+    flags.medicalNeeds = true;
+    activeModules.push("necesidades_medicas");
   }
 
   if (
@@ -419,6 +469,10 @@ const activityModules = [];
       activeModules.push(
         "ninos_8_12"
       );
+    }
+
+    if (childAges.some(age => age >= 13 && age <= 17)) {
+      activeModules.push("adolescentes");
     }
 
     if (
