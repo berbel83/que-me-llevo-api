@@ -101,6 +101,9 @@ export async function handleGenerate(body, env) {
 
     categories,
 
+    discoveries:
+      buildDiscoveries(context),
+
     leave_home:
       sanitizeLeaveHome(
         buildLeaveHome(context)
@@ -131,6 +134,64 @@ activity_modules:
         context.flags
     }
   };
+}
+
+
+// ======================================================
+// DESCUBRIMIENTOS ÚTILES CON POTENCIAL DE AFILIACIÓN
+// ======================================================
+
+function buildDiscoveries(context) {
+  const modules = new Set(context.activeModules || []);
+  const candidates = [];
+  const add = (name, hook, searchQuery) => {
+    if (!candidates.some(item => item.name === name)) {
+      candidates.push({ name, hook, search_query: searchQuery });
+    }
+  };
+
+  if (modules.has("bebe")) {
+    add("Persiana opaca portátil", "Puede ayudar a mantener la rutina de sueño del bebé aunque la habitación no oscurezca bien.", "persiana opaca portátil viaje bebé");
+    add("Organizador para carrito", "Deja a mano biberón, toallitas y pequeños objetos sin rebuscar en la maleta.", "organizador universal carrito bebé viaje");
+  }
+  if (modules.has("playa")) {
+    add("Bolsa que deja escapar la arena", "Una solución sencilla para no llevar media playa de vuelta al alojamiento.", "bolsa playa malla anti arena");
+    add("Funda impermeable flotante para móvil", "Protege el teléfono y permite tenerlo localizado cerca del agua.", "funda móvil impermeable flotante playa");
+  }
+  if (modules.has("camping")) {
+    add("Linterna recargable multifunción", "Ilumina la zona y algunos modelos también sirven como batería de emergencia.", "linterna camping recargable power bank");
+    add("Ducha solar compacta", "Puede resolver la higiene y el aclarado cuando la parcela queda lejos de las duchas.", "ducha solar portátil camping");
+  }
+  if (modules.has("nieve")) {
+    add("Secador portátil para botas y guantes", "Evita comenzar el día siguiente con el material todavía húmedo.", "secador portátil botas guantes esquí");
+    add("Correa anticaída para el móvil", "Reduce el riesgo de perder el teléfono al usarlo con guantes o en un remonte.", "correa seguridad móvil esquí");
+  }
+  if (modules.has("peregrinacion_camino")) {
+    add("Tendedero ultraligero de viaje", "Permite lavar pocas prendas y reutilizarlas sin llenar la mochila.", "tendedero viaje ultraligero camping");
+    add("Kit específico para ampollas", "Ocupa muy poco y puede salvar una etapa si aparecen rozaduras.", "kit ampollas senderismo camino santiago");
+  }
+  if (modules.has("equipaje_cabina") || modules.has("avion")) {
+    add("Báscula digital de equipaje", "Evita descubrir en el aeropuerto que la maleta supera el peso permitido.", "báscula digital maleta viaje");
+    add("Organizadores de compresión", "Reducen volumen y ayudan a aprovechar mejor una maleta pequeña.", "organizadores compresión maleta viaje");
+  }
+  if (modules.has("viaje_internacional")) {
+    add("Adaptador universal con USB-C", "Un solo accesorio puede cargar varios dispositivos en países diferentes.", "adaptador universal viaje USB C");
+    add("Cartera de viaje antirrobo", "Mantiene documentación y tarjetas agrupadas y menos expuestas durante traslados.", "cartera viaje antirrobo pasaporte");
+  }
+  if (modules.has("viaje_trabajo")) {
+    add("Cargador compacto multidispositivo", "Puede sustituir varios cargadores y liberar espacio en un viaje corto.", "cargador GaN USB C multidispositivo viaje");
+    add("Organizador de cables y accesorios", "Evita perder tiempo buscando adaptadores, memorias o cargadores antes de una reunión.", "organizador cables viaje tecnología");
+  }
+  if (modules.has("ninos_4_7") || modules.has("ninos_8_12") || modules.has("ninos_generico")) {
+    add("Pulsera identificativa reutilizable", "Puede incluir un teléfono de contacto sin depender de que el niño lo recuerde.", "pulsera identificativa niños viaje teléfono");
+  }
+
+  if (candidates.length < 2) {
+    add("Localizador para maleta o mochila", "Ayuda a localizar el equipaje si se separa de ti durante un traslado.", "localizador bluetooth maleta viaje");
+    add("Báscula digital de equipaje", "Evita sorpresas de peso antes de facturar o volver a casa.", "báscula digital maleta viaje");
+  }
+
+  return candidates.slice(0, 3);
 }
 
 
