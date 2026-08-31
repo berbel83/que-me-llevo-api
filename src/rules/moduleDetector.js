@@ -353,6 +353,22 @@ const activityModules = [];
     );
   }
 
+  if (
+    matches(text, [
+      "viaje de trabajo",
+      "viajo por trabajo",
+      "por trabajo",
+      "viaje de negocios",
+      "congreso",
+      "reunion de trabajo",
+      "reunión de trabajo",
+      "reunion formal",
+      "reunión formal"
+    ])
+  ) {
+    activeModules.push("viaje_trabajo");
+  }
+
   
   // ====================================================
   // NIÑOS / BEBÉS
@@ -454,6 +470,9 @@ const activityModules = [];
       "llevamos nuestras mochilas",
       "llevaremos nuestras mochilas",
       "llevo mi mochila",
+      "llevare mi propia mochila",
+      "llevaré mi propia mochila",
+      "llevo mi propia mochila",
       "mochila propia",
       "cargamos mochila",
       "transportamos nuestro equipaje",
@@ -515,7 +534,7 @@ const activityModules = [];
     matches(text, [
       "tren",
       "interrail"
-    ])
+    ]) || matchesWholeWords(text, ["ave"])
   ) {
     flags.train = true;
     activeModules.push("tren");
@@ -547,11 +566,27 @@ const activityModules = [];
       "varios hoteles",
       "cambio de hotel",
       "cambios de hotel"
+      ,"pekin",
+      "pekín",
+      "xian",
+      "xi’an",
+      "shanghai",
+      "shanghái"
     ])
   ) {
     activeModules.push(
       "urbano_multidestino"
     );
+  }
+
+  if (
+    matches(text, [
+      "china", "japon", "japón", "estados unidos", "eeuu",
+      "reino unido", "marruecos", "turquia", "turquía", "tailandia",
+      "fuera de espana", "fuera de españa", "extranjero"
+    ])
+  ) {
+    activeModules.push("viaje_internacional");
   }
 
   // ====================================================
