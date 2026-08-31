@@ -228,9 +228,14 @@ function buildDiscoveries(context) {
     add("Pulsera identificativa reutilizable", "Puede incluir un teléfono de contacto sin depender de que el niño lo recuerde.", "pulsera identificativa niños viaje teléfono");
   }
 
-  if (candidates.length < 2) {
-    add("Localizador para maleta o mochila", "Ayuda a localizar el equipaje si se separa de ti durante un traslado.", "localizador bluetooth maleta viaje");
-    add("Báscula digital de equipaje", "Evita sorpresas de peso antes de facturar o volver a casa.", "báscula digital maleta viaje");
+  const evergreen = [
+    ["Localizador para maleta o mochila", "Ayuda a localizar el equipaje si se separa de ti durante un traslado.", "localizador bluetooth maleta viaje"],
+    ["Báscula digital de equipaje", "Evita sorpresas de peso antes de facturar o volver a casa.", "báscula digital maleta viaje"],
+    ["Mochila plegable ultraligera", "Se guarda en muy poco espacio y resulta útil para excursiones, compras o equipaje extra de vuelta.", "mochila plegable ultraligera viaje"]
+  ];
+  for (const [name, hook, searchQuery] of evergreen) {
+    if (candidates.length >= 3) break;
+    add(name, hook, searchQuery);
   }
 
   return candidates.slice(0, 3);
