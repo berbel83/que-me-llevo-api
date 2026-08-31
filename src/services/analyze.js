@@ -22,6 +22,24 @@ export async function handleAnalyze(body, env) {
 
   const local = localAnalyze(trip);
 
+  // Los casos imposibles detectados localmente deben detenerse antes
+  // de aplicar el umbral de confianza.
+  if (local.invalid) {
+    return {
+      valid: false,
+      interpretation: local.interpretation,
+      reason: "El destino o la experiencia descritos no son posibles actualmente como viaje turístico real.",
+      trip_profile: local.trip_profile,
+      general_warnings: [],
+      verification_needed: [],
+      questions: [],
+      intelligence: {
+        source: "local",
+        confidence: local.confidence
+      }
+    };
+  }
+
   // Si entendemos suficientemente bien el viaje,
   // NO llamamos a Groq.
   if (local.confidence >= 0.79) {
@@ -473,7 +491,7 @@ function localAnalyze(trip) {
   // ======================================================
 
   if (
-    /mochila propia|nuestras mochilas|llevaremos nosotros mismos nuestras mochilas/.test(
+    /mochila propia|nuestras mochilas|mi propia mochila|llevare mi mochila|llevaré mi mochila|llevaremos nosotros mismos nuestras mochilas/.test(
       text
     )
   ) {
@@ -738,6 +756,13 @@ function filterQuestions(
         normalize(
           `${question.question || ""} ${question.reason || ""}`
         );
+
+      if (
+        question.id === "equipaje" &&
+        /mi propia mochila|llevo mi mochila|llevare mi mochila|llevaremos nuestras mochilas|mochila propia/.test(tripText)
+      ) {
+        return false;
+      }
 
       if (
         /experiencia previa|preparacion fisica|condicion fisica/.test(
