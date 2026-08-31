@@ -377,6 +377,14 @@ const MODULES = {
   camping: {
     items: [
       item(
+        "tienda_camping",
+        "Camping",
+        "Tienda de campaña con piquetas y elementos de montaje",
+        "essential",
+        "Solo es necesaria si el alojamiento no incluye una tienda o bungalow ya preparado.",
+        true
+      ),
+      item(
         "sistema_descanso_camping",
         "Camping",
         "Sistema de descanso adecuado al tipo de acampada",
@@ -391,6 +399,54 @@ const MODULES = {
         "essential",
         "Permite moverse con seguridad cuando no hay iluminación suficiente.",
         true
+      ),
+      item(
+        "esterilla_aislante",
+        "Camping",
+        "Esterilla o colchón aislante",
+        "essential",
+        "Aísla del suelo y mejora el descanso nocturno.",
+        true
+      ),
+      item(
+        "repelente_insectos",
+        "Camping",
+        "Repelente de insectos adecuado para los viajeros",
+        "recommended",
+        "Puede ser especialmente útil al atardecer y durante la noche.",
+        true
+      ),
+      item(
+        "agua_camping",
+        "Camping",
+        "Recipientes reutilizables para agua",
+        "essential",
+        "Facilitan disponer de agua en la parcela o zona de acampada.",
+        true
+      ),
+      item(
+        "menaje_camping",
+        "Camping",
+        "Menaje básico para comer y cocinar, si no está incluido",
+        "recommended",
+        "Evita duplicarlo si el camping o el alojamiento ya lo proporciona.",
+        true
+      ),
+      item(
+        "bateria_externa_camping",
+        "Electrónica",
+        "Batería externa",
+        "recommended",
+        "Resulta útil cuando no hay un enchufe accesible durante parte del día.",
+        true
+      ),
+      item(
+        "bolsas_residuos_camping",
+        "Camping",
+        "Bolsas para residuos y organización",
+        "recommended",
+        "Ayudan a mantener limpia y ordenada la zona de acampada.",
+        false
       )
     ],
     verifications: [
@@ -605,7 +661,14 @@ const MODULES = {
         "essential",
         "Los cambios imprevistos son frecuentes.",
         false
-      )
+      ),
+      item("toallitas_bebe", "Bebé", "Toallitas o material habitual para el cambio", "essential", "Permite realizar cambios fuera del alojamiento.", false),
+      item("crema_bebe", "Bebé", "Crema protectora de uso habitual", "recommended", "Ayuda a prevenir o atender irritaciones durante el viaje.", false),
+      item("alimentacion_bebe", "Bebé", "Alimentación, biberones y baberos según su rutina", "essential", "Mantener su rutina evita depender de encontrar productos concretos.", false),
+      item("sueno_bebe", "Bebé", "Objeto o accesorio habitual para dormir", "recommended", "Un elemento familiar puede facilitar el descanso fuera de casa.", true),
+      item("transporte_bebe", "Bebé", "Carrito o portabebés según el plan", "recommended", "Conviene elegir el sistema que resulte práctico para los desplazamientos previstos.", true),
+      item("cambiador_portatil", "Bebé", "Cambiador portátil", "recommended", "Facilita los cambios durante trayectos y salidas.", true),
+      item("silla_coche_bebe", "Bebé", "Sistema de retención infantil adecuado si se viaja en coche", "essential", "Debe ser adecuado al menor y al vehículo utilizado.", true)
     ]
   },
 
@@ -645,6 +708,8 @@ const MODULES = {
 
   equipaje_cabina: {
     items: [
+      item("bolsa_liquidos_cabina", "Equipaje", "Bolsa transparente para líquidos y formatos permitidos", "recommended", "Facilita el control de seguridad y la organización del neceser.", true),
+      item("documentos_accesibles_cabina", "Equipaje", "Documentación y reservas accesibles durante el trayecto", "essential", "Evita tener que reorganizar la maleta en controles o embarque.", false),
       item(
         "organizacion_cabina",
         "Equipaje",
@@ -699,7 +764,13 @@ const MODULES = {
         "recommended",
         "Evita humedecer el resto del equipaje.",
         true
-      )
+      ),
+      item("proteccion_solar_playa", "Playa", "Protección solar adecuada", "essential", "La exposición aumenta durante actividades de playa y piscina.", true),
+      item("gorra_playa", "Playa", "Gorra o sombrero", "recommended", "Ayuda a reducir la exposición directa al sol.", true),
+      item("toalla_playa", "Playa", "Toalla de playa o piscina", "recommended", "Comprueba antes si el alojamiento la proporciona.", true),
+      item("chanclas_playa", "Playa", "Chanclas o calzado para zonas húmedas", "recommended", "Son prácticas en playa, piscina y duchas.", true),
+      item("gafas_sol_playa", "Playa", "Gafas de sol", "recommended", "Mejoran la comodidad durante muchas horas al aire libre.", true),
+      item("segundo_banador", "Playa", "Segundo bañador para viajes de varios días", "optional", "Permite alternar mientras el otro se seca.", true)
     ]
   },
 
@@ -720,7 +791,37 @@ const MODULES = {
         "recommended",
         "El frío, viento y exposición pueden resecar los labios.",
         true
-      )
+      ),
+      item("casco_nieve", "Nieve y frío", "Casco para esquí o snowboard", "essential", "Es un elemento básico de protección durante la actividad.", true),
+      item("gafas_nieve", "Nieve y frío", "Gafas de nieve", "essential", "Protegen los ojos frente a viento, nieve y luminosidad intensa.", true),
+      item("ropa_exterior_nieve", "Nieve y frío", "Chaqueta y pantalón impermeables para nieve", "essential", "Mantienen el cuerpo seco durante la actividad.", true),
+      item("ropa_termica_nieve", "Nieve y frío", "Capas térmicas transpirables", "essential", "Ayudan a regular la temperatura sin acumular humedad.", true),
+      item("calcetines_esqui", "Nieve y frío", "Calcetines específicos de esquí", "recommended", "Mejoran el ajuste de la bota y reducen rozaduras.", true),
+      item("equipo_esqui", "Nieve y frío", "Esquís o tabla, botas y bastones, propios o reservados", "essential", "Comprueba qué material llevarás y qué material alquilarás en destino.", true)
+    ]
+  },
+
+  viaje_trabajo: {
+    items: [
+      item("portatil_trabajo", "Trabajo", "Portátil o dispositivo necesario para trabajar", "essential", "Lleva únicamente el equipo que vayas a utilizar.", true),
+      item("cargador_trabajo", "Trabajo", "Cargador del equipo de trabajo", "essential", "Evita quedarte sin batería durante reuniones o desplazamientos.", true),
+      item("documentacion_trabajo", "Trabajo", "Documentación, acreditaciones y archivos de la reunión", "essential", "Conviene llevarlos descargados y accesibles sin conexión.", false),
+      item("ropa_formal_trabajo", "Trabajo", "Conjunto adecuado para la reunión", "essential", "Ajústalo al nivel de formalidad indicado y transpórtalo protegido.", true),
+      item("adaptador_presentacion", "Trabajo", "Adaptador o cable para presentaciones, si lo necesitas", "optional", "Comprueba previamente las conexiones disponibles.", true)
+    ]
+  },
+
+  viaje_internacional: {
+    items: [
+      item("adaptador_enchufe", "Viaje internacional", "Adaptador de enchufe compatible con el destino", "recommended", "Comprueba el tipo de enchufe y voltaje del país antes de comprarlo.", true),
+      item("copias_documentos", "Viaje internacional", "Copias seguras de documentación y reservas", "recommended", "Pueden facilitar gestiones si pierdes el acceso al original.", false),
+      item("conectividad_internacional", "Viaje internacional", "Solución de conectividad para el destino", "recommended", "Valora roaming, SIM o eSIM según cobertura, precio y compatibilidad.", true),
+      item("traduccion_offline", "Viaje internacional", "Mapas y traducción disponibles sin conexión", "recommended", "Ayudan a orientarse cuando no hay datos móviles.", false),
+      item("pago_alternativo", "Viaje internacional", "Medio de pago alternativo aceptado en el destino", "essential", "No dependas de una única tarjeta o aplicación.", false)
+    ],
+    verifications: [
+      "Comprobar en fuentes oficiales la documentación, entrada, sanidad y requisitos vigentes del destino.",
+      "Comprobar compatibilidad de pagos, conectividad y enchufes en los países visitados."
     ]
   },
 
