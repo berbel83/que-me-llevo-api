@@ -318,6 +318,8 @@ const MODULES = {
 
   hotel: {
     items: [
+      item("antifaz_hotel", "Alojamiento", "Antifaz para dormir", "optional", "Puede mejorar el descanso si la habitación no queda suficientemente oscura.", true),
+      item("tapones_hotel", "Alojamiento", "Tapones para los oídos", "optional", "Son útiles si la habitación da a una zona ruidosa.", true),
       item(
         "ropa_comoda_hotel",
         "Alojamiento",
@@ -331,6 +333,8 @@ const MODULES = {
 
   apartamento: {
     items: [
+      item("capsulas_lavado", "Alojamiento", "Dosis pequeñas de detergente si piensas lavar", "optional", "Evita comprar un formato grande para pocos usos.", true),
+      item("kit_cocina_viaje", "Alojamiento", "Pequeño kit de cocina que el alojamiento pueda no incluir", "optional", "Comprueba primero el inventario para no llevar cosas innecesarias.", true),
       item(
         "bolsa_compra_reutilizable",
         "Alojamiento",
@@ -585,7 +589,10 @@ const MODULES = {
         "essential",
         "A estas edades los cambios imprevistos son frecuentes.",
         false
-      )
+      ),
+      item("snacks_nino_pequeno", "Niños", "Agua y tentempiés habituales accesibles", "recommended", "Ayudan a resolver esperas y cambios de horario.", false),
+      item("objeto_sueno_nino", "Niños", "Objeto habitual para dormir", "recommended", "Puede facilitar el descanso fuera de casa.", false),
+      item("entretenimiento_0_3", "Niños", "Entretenimiento pequeño adecuado a su edad", "optional", "Resulta útil durante trayectos y esperas.", true)
     ]
   },
 
@@ -627,7 +634,17 @@ const MODULES = {
         "optional",
         "Puede ser útil en lugares especialmente concurridos.",
         true
-      )
+      ),
+      item("mochila_nino_8_12", "Niños", "Mochila ligera propia", "optional", "Puede llevar su agua y algún objeto personal sin sobrecargarla.", true),
+      item("entretenimiento_8_12", "Niños", "Entretenimiento y auriculares para el trayecto", "optional", "Ayudan en desplazamientos largos respetando a otros viajeros.", true)
+    ]
+  },
+
+  adolescentes: {
+    items: [
+      item("auriculares_adolescente", "Adolescentes", "Auriculares y entretenimiento descargado", "optional", "Facilitan trayectos largos incluso sin conexión.", true),
+      item("cargador_adolescente", "Adolescentes", "Cargador identificado para sus dispositivos", "recommended", "Evita confusiones cuando viajan varios dispositivos similares.", true),
+      item("mochila_adolescente", "Adolescentes", "Mochila ligera para sus objetos personales", "optional", "Les permite responsabilizarse de lo necesario durante el día.", true)
     ]
   },
 
@@ -731,7 +748,13 @@ const MODULES = {
   },
 
   tren: {
-    items: []
+    items: [
+      item("billetes_tren_offline", "Trayecto en tren", "Billetes descargados y localizador de reserva", "essential", "Permite acceder a ellos aunque falle la conexión.", false),
+      item("equipaje_manejable_tren", "Trayecto en tren", "Equipaje fácil de mover y reconocer", "recommended", "Facilita transbordos, escaleras y espacios compartidos.", true),
+      item("entretenimiento_tren", "Trayecto en tren", "Entretenimiento descargado y auriculares", "optional", "Resulta práctico en trayectos largos o sin cobertura.", true),
+      item("agua_snack_tren", "Trayecto en tren", "Agua y tentempié para el trayecto", "optional", "Evita depender de que exista servicio a bordo.", false)
+    ],
+    verifications: ["Comprobar condiciones de equipaje, estación y transbordos con el operador ferroviario."]
   },
 
   coche: {
@@ -823,6 +846,128 @@ const MODULES = {
       "Comprobar en fuentes oficiales la documentación, entrada, sanidad y requisitos vigentes del destino.",
       "Comprobar compatibilidad de pagos, conectividad y enchufes en los países visitados."
     ]
+  },
+
+  crucero: {
+    items: [
+      item("bolsa_embarque_crucero", "Crucero", "Bolsa de mano para las primeras horas a bordo", "recommended", "El equipaje principal puede tardar en llegar al camarote.", true),
+      item("tarjetero_crucero", "Crucero", "Portatarjetas o cordón para la tarjeta del barco", "optional", "Permite tener accesible la identificación utilizada a bordo.", true),
+      item("organizador_camarote", "Crucero", "Organizador compacto para camarote", "optional", "Ayuda a aprovechar un espacio de almacenamiento limitado.", true),
+      item("ropa_evento_crucero", "Crucero", "Conjunto para noches o cenas especiales", "recommended", "Ajústalo al código de vestimenta comunicado por la naviera.", true),
+      item("medicacion_mareo", "Salud", "Solución habitual para el mareo, si la necesitas", "recommended", "Consulta con un profesional si no sabes qué opción es adecuada para ti.", false),
+      item("botella_crucero", "Crucero", "Botella reutilizable permitida por la naviera", "optional", "Puede ser útil durante excursiones y jornadas fuera del camarote.", true)
+    ],
+    verifications: ["Comprobar con la naviera documentación, objetos prohibidos, enchufes, vestimenta y condiciones de embarque vigentes."]
+  },
+
+  autocaravana_caravana: {
+    items: [
+      item("niveladores", "Autocaravana o caravana", "Calzos niveladores", "recommended", "Ayudan a estabilizar y nivelar el vehículo en la parcela.", true),
+      item("cable_electrico_camping", "Autocaravana o caravana", "Cable eléctrico y adaptadores adecuados", "essential", "La conexión disponible puede variar entre áreas y campings.", true),
+      item("manguera_agua", "Autocaravana o caravana", "Manguera apta para agua y adaptadores", "recommended", "Facilita el llenado cuando las tomas tienen conexiones diferentes.", true),
+      item("guantes_servicio", "Autocaravana o caravana", "Guantes para tareas de servicio y vaciado", "recommended", "Permiten realizar estas tareas con mayor higiene.", true),
+      item("organizacion_autocaravana", "Autocaravana o caravana", "Organizadores antideslizantes y de cierre", "recommended", "Evitan movimientos y ruidos durante la marcha.", true),
+      item("linterna_autocaravana", "Autocaravana o caravana", "Linterna recargable", "recommended", "Es útil en llegadas nocturnas y revisiones exteriores.", true),
+      item("botiquin_vehiculo", "Autocaravana o caravana", "Botiquín accesible en el vehículo", "essential", "Debe estar localizado y accesible para todos los adultos.", false)
+    ],
+    verifications: ["Comprobar documentación, masas, equipamiento obligatorio y normas de estacionamiento o pernocta aplicables al vehículo y al destino."]
+  },
+
+  road_trip: {
+    items: [
+      item("soporte_movil_coche", "Ruta en coche", "Soporte seguro para el móvil", "recommended", "Facilita la navegación sin sostener el teléfono.", true),
+      item("cargador_coche", "Ruta en coche", "Cargador de coche multidispositivo", "recommended", "Mantiene operativos navegación y teléfonos durante etapas largas.", true),
+      item("organizador_asientos", "Ruta en coche", "Organizador para respaldos o habitáculo", "optional", "Mantiene accesibles agua, entretenimiento y objetos infantiles.", true),
+      item("kit_emergencia_coche", "Ruta en coche", "Kit básico de emergencia adecuado al vehículo", "essential", "Debe adaptarse al coche, la ruta y las obligaciones vigentes.", true),
+      item("nevera_portatil", "Ruta en coche", "Nevera portátil compacta", "optional", "Permite conservar agua y tentempiés durante etapas largas.", true)
+    ],
+    verifications: ["Revisar el vehículo y comprobar normativa, documentación, asistencia y elementos obligatorios en los países de la ruta."]
+  },
+
+  mascotas: {
+    items: [
+      item("documentacion_mascota", "Mascota", "Documentación sanitaria e identificación de la mascota", "essential", "Los requisitos dependen del destino y del medio de transporte.", false),
+      item("transportin_arnes", "Mascota", "Transportín o sistema de sujeción adecuado", "essential", "Debe adaptarse al animal, al vehículo y a las normas aplicables.", true),
+      item("comedero_viaje", "Mascota", "Comedero y bebedero plegables", "recommended", "Ocupan poco y facilitan paradas y excursiones.", true),
+      item("comida_mascota", "Mascota", "Comida habitual con margen", "essential", "Evita cambios bruscos o depender de encontrar la misma marca.", false),
+      item("cama_manta_mascota", "Mascota", "Manta u objeto familiar", "recommended", "Puede ayudar al animal a descansar en un entorno nuevo.", true),
+      item("bolsas_toalla_mascota", "Mascota", "Bolsas, toalla y material de limpieza", "recommended", "Resuelve suciedad e imprevistos durante el trayecto.", false),
+      item("medicacion_mascota", "Mascota", "Medicación habitual de la mascota", "essential", "Lleva la cantidad necesaria y las indicaciones veterinarias.", false)
+    ],
+    verifications: ["Comprobar con fuentes oficiales, transportista y alojamientos los requisitos y condiciones para viajar con mascotas."]
+  },
+
+  vuelo_largo: {
+    items: [
+      item("almohada_vuelo", "Vuelo largo", "Almohada cervical compacta", "optional", "Puede mejorar el apoyo durante muchas horas sentado.", true),
+      item("antifaz_vuelo", "Vuelo largo", "Antifaz y tapones para descansar", "recommended", "Ayudan a reducir luz y ruido durante el trayecto.", true),
+      item("medias_compresion", "Vuelo largo", "Medias de compresión solo si son adecuadas para ti", "optional", "Consulta con un profesional si tienes dudas o factores de riesgo.", true),
+      item("neceser_vuelo", "Vuelo largo", "Neceser pequeño accesible durante el vuelo", "recommended", "Permite refrescarte sin abrir el equipaje principal.", true),
+      item("cable_bateria_vuelo", "Vuelo largo", "Cable largo y batería externa permitida", "recommended", "Facilita mantener los dispositivos disponibles durante escalas y vuelo.", true)
+    ],
+    verifications: ["Comprobar con la aerolínea las reglas vigentes para baterías, líquidos y accesorios de descanso."]
+  },
+
+  tropical_mosquitos: {
+    items: [
+      item("repelente_tropical", "Clima tropical", "Repelente adecuado al destino y a los viajeros", "essential", "El producto apropiado depende del lugar, edad y recomendaciones sanitarias.", true),
+      item("mosquitera_viaje", "Clima tropical", "Mosquitera de viaje si el alojamiento no dispone de ella", "optional", "Puede añadir protección durante el descanso.", true),
+      item("ropa_larga_tropical", "Clima tropical", "Ropa ligera de manga y pernera largas", "recommended", "Ayuda frente a insectos y exposición solar sin abrigar en exceso.", true),
+      item("bolsa_estanca_tropical", "Clima tropical", "Bolsa estanca para documentación y electrónica", "recommended", "Protege objetos sensibles frente a humedad y lluvias intensas.", true),
+      item("rehidratacion_viaje", "Salud", "Solución de rehidratación habitual", "optional", "Puede resultar útil con calor intenso; sigue siempre las indicaciones del producto.", false)
+    ],
+    verifications: ["Consultar recomendaciones sanitarias oficiales, vacunas, prevención de insectos y temporada de lluvias del destino."]
+  },
+
+  boda_evento: {
+    items: [
+      item("conjunto_evento", "Evento", "Conjunto completo para el evento", "essential", "Incluye prendas, complementos y ropa interior necesaria.", true),
+      item("funda_ropa_evento", "Evento", "Funda para transportar la ropa", "recommended", "Reduce arrugas y protege prendas delicadas.", true),
+      item("kit_arreglos_evento", "Evento", "Kit compacto para pequeños arreglos", "optional", "Puede resolver un botón, una costura o una mancha imprevista.", true),
+      item("calzado_recambio_evento", "Evento", "Calzado cómodo de recambio", "optional", "Puede mejorar la comodidad después de varias horas.", true)
+    ]
+  },
+
+  festival: {
+    items: [
+      item("rinonera_segura", "Festival", "Riñonera o bolsa compacta segura", "recommended", "Mantiene móvil y documentación cerca del cuerpo.", true),
+      item("tapones_concierto", "Festival", "Tapones reutilizables para música", "recommended", "Reducen la exposición sonora manteniendo una experiencia más cómoda.", true),
+      item("poncho_festival", "Festival", "Poncho compacto", "optional", "Ocupa poco y permite seguir la actividad si llueve.", true),
+      item("powerbank_festival", "Festival", "Batería externa compacta", "recommended", "El móvil suele usarse para entradas, pagos y coordinación.", true),
+      item("botella_permitida_festival", "Festival", "Botella permitida por la organización", "optional", "Comprueba formato y restricciones antes de llevarla.", true)
+    ],
+    verifications: ["Comprobar objetos permitidos, accesos, pagos y servicios en la web oficial del evento."]
+  },
+
+  cicloturismo: {
+    items: [
+      item("casco_cicloturismo", "Cicloturismo", "Casco adecuado", "essential", "Es una protección básica durante las etapas.", true),
+      item("kit_reparacion_bici", "Cicloturismo", "Kit de reparación y cámara o solución antipinchazos", "essential", "Permite resolver averías frecuentes lejos de un taller.", true),
+      item("luces_bici", "Cicloturismo", "Luces y elementos de visibilidad", "essential", "Mejoran la visibilidad ante cambios de luz o etapas imprevistas.", true),
+      item("culotte_guantes", "Cicloturismo", "Culotte y guantes adecuados", "recommended", "Mejoran la comodidad durante varias horas consecutivas.", true),
+      item("bidones_bici", "Cicloturismo", "Bidones o sistema de hidratación", "essential", "Facilita beber durante la etapa.", true),
+      item("bolsas_bici", "Cicloturismo", "Bolsas de bicicleta bien fijadas e impermeabilizadas", "recommended", "Distribuyen el equipaje sin depender de una mochila pesada.", true)
+    ]
+  },
+
+  accesibilidad: {
+    items: [
+      item("documentacion_accesibilidad", "Accesibilidad", "Documentación de asistencia o necesidades, si procede", "recommended", "Puede facilitar la coordinación con transportistas y alojamientos.", false),
+      item("repuestos_ayuda", "Accesibilidad", "Repuestos, cargadores o herramientas de la ayuda técnica", "essential", "Conviene llevar los elementos difíciles de conseguir en destino.", true),
+      item("informacion_accesible", "Accesibilidad", "Datos de asistencia y contactos guardados sin conexión", "essential", "Permiten pedir ayuda aunque no haya cobertura.", false),
+      item("bolsa_accesible", "Accesibilidad", "Bolsa accesible para medicación y objetos necesarios", "recommended", "Mantiene lo importante al alcance durante los traslados.", true)
+    ],
+    verifications: ["Confirmar por escrito accesibilidad, asistencia, dimensiones y condiciones con transportistas, alojamientos y actividades."]
+  },
+
+  necesidades_medicas: {
+    items: [
+      item("informe_medico_viaje", "Salud", "Informe o documentación médica relevante", "recommended", "Puede facilitar la atención o explicar dispositivos y medicación.", false),
+      item("medicacion_margen", "Salud", "Medicación con margen y distribuida de forma segura", "essential", "Evita quedarte sin tratamiento ante retrasos o pérdida de equipaje.", false),
+      item("recetas_medicas", "Salud", "Recetas e información de los medicamentos", "recommended", "Facilitan comprobaciones y reposición si fuera necesaria.", false),
+      item("refrigeracion_medicacion", "Salud", "Sistema de transporte adecuado si la medicación requiere temperatura controlada", "essential", "Confirma conservación y transporte con profesionales y transportistas.", true)
+    ],
+    verifications: ["Consultar con profesionales sanitarios y transportistas la conservación, documentación y transporte de medicación o dispositivos."]
   },
 
   clima_frio: {
