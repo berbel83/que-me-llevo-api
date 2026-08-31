@@ -182,6 +182,48 @@ function buildDiscoveries(context) {
     add("Cargador compacto multidispositivo", "Puede sustituir varios cargadores y liberar espacio en un viaje corto.", "cargador GaN USB C multidispositivo viaje");
     add("Organizador de cables y accesorios", "Evita perder tiempo buscando adaptadores, memorias o cargadores antes de una reunión.", "organizador cables viaje tecnología");
   }
+  if (modules.has("crucero")) {
+    add("Organizador colgante para camarote", "Aprovecha puertas y paredes para ordenar un espacio que suele ser pequeño.", "organizador colgante camarote crucero");
+    add("Portatarjetas para crucero", "Mantiene accesible la tarjeta que se utiliza continuamente a bordo.", "portatarjetas cordón crucero");
+  }
+  if (modules.has("autocaravana_caravana")) {
+    add("Calzos niveladores", "Evitan dormir inclinado y ayudan a estabilizar el vehículo en la parcela.", "calzos niveladores autocaravana");
+    add("Organizadores antideslizantes", "Reducen movimientos, golpes y ruidos de objetos durante la marcha.", "organizador antideslizante autocaravana");
+  }
+  if (modules.has("road_trip")) {
+    add("Organizador para respaldos", "Mantiene agua, juguetes y pequeños objetos accesibles durante etapas largas.", "organizador respaldo coche viaje");
+    add("Nevera portátil compacta", "Permite llevar agua y tentempiés sin depender de cada parada.", "nevera portátil coche compacta");
+  }
+  if (modules.has("mascotas")) {
+    add("Bebedero portátil para mascotas", "Permite ofrecer agua en paradas y excursiones sin cargar un cuenco rígido.", "bebedero portátil perro viaje");
+    add("Protector impermeable para asiento", "Facilita limpiar pelo, arena o humedad después de los desplazamientos.", "protector asiento coche perro impermeable");
+  }
+  if (modules.has("vuelo_largo")) {
+    add("Almohada cervical compacta", "Puede mejorar el apoyo durante muchas horas sin ocupar media maleta.", "almohada cervical viaje compacta");
+    add("Reposapiés de avión", "Algunas personas descansan mejor al poder cambiar el apoyo de las piernas.", "reposapiés avión portátil");
+  }
+  if (modules.has("tropical_mosquitos")) {
+    add("Mosquitera ultraligera de viaje", "Añade protección al dormir si el alojamiento no dispone de mosquitera.", "mosquitera viaje ultraligera");
+    add("Bolsa estanca compacta", "Protege documentación y electrónica de humedad y lluvias intensas.", "bolsa estanca viaje compacta");
+  }
+  if (modules.has("festival")) {
+    add("Tapones para conciertos", "Reducen la intensidad sonora sin aislarte completamente de la música.", "tapones oidos conciertos reutilizables");
+    add("Poncho de bolsillo reutilizable", "Ocupa muy poco y puede salvar el día si cambia el tiempo.", "poncho lluvia festival reutilizable");
+  }
+  if (modules.has("boda_evento")) {
+    add("Kit antimanchas de viaje", "Puede resolver un pequeño accidente justo antes o durante el evento.", "kit quitamanchas viaje ropa");
+    add("Vaporizador compacto", "Ayuda a recuperar ropa arrugada después de transportarla en la maleta.", "vaporizador ropa viaje compacto");
+  }
+  if (modules.has("cicloturismo")) {
+    add("Multiherramienta para bicicleta", "Resuelve pequeños ajustes sin depender de encontrar un taller.", "multiherramienta bicicleta compacta");
+    add("Bolsas impermeables para bicicleta", "Protegen ropa y electrónica sin cargar todo el peso sobre la espalda.", "bolsas bicicleta impermeables cicloturismo");
+  }
+  if (modules.has("accesibilidad")) {
+    add("Bolsa organizadora accesible", "Mantiene medicación, documentos y pequeños objetos siempre al alcance.", "bolsa organizadora silla ruedas viaje");
+  }
+  if (modules.has("adolescentes")) {
+    add("Organizador tecnológico individual", "Evita mezclar cargadores y auriculares cuando viajan varios dispositivos.", "organizador cables viaje tecnología");
+  }
   if (modules.has("ninos_4_7") || modules.has("ninos_8_12") || modules.has("ninos_generico")) {
     add("Pulsera identificativa reutilizable", "Puede incluir un teléfono de contacto sin depender de que el niño lo recuerde.", "pulsera identificativa niños viaje teléfono");
   }
